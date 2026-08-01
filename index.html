@@ -84,6 +84,16 @@
             font-weight: bold;
         }
 
+        /* GST Breakup Table Layout */
+        #gstBreakupTable {
+            width: 350px;
+            margin-top: 30px;
+            font-size: 14px;
+        }
+        #gstBreakupTable td {
+            padding: 6px;
+        }
+
         .btn {
             cursor: pointer;
             padding: 2px 6px;
@@ -233,65 +243,69 @@
             </tr>
         </tbody>
         
-        <!-- FINAL SUMMARY SECTION (From image_6f67a5.png) -->
+        <!-- FINAL SUMMARY SECTION -->
         <tbody id="finalSummaryBody">
-            <!-- Empty row for spacing -->
             <tr><td colspan="14" style="border: none; height: 15px;"></td></tr>
             
             <tr>
                 <td colspan="11" class="summary-label">AMOUNT BEFORE GST</td>
-                <td colspan="2"><input type="number" id="sumAmtBeforeGst" class="readonly-cell summary-input" readonly placeholder="0.00"></td>
+                <td colspan="2"><input type="number" id="sumAmtBeforeGst" class="readonly-cell summary-input" readonly placeholder="0"></td>
                 <td style="border: none;"></td>
             </tr>
             <tr>
                 <td colspan="11" class="summary-label">ADD GST</td>
-                <td colspan="2"><input type="number" id="sumGst" class="readonly-cell summary-input" readonly placeholder="0.00"></td>
+                <td colspan="2"><input type="number" id="sumGst" class="readonly-cell summary-input" readonly placeholder="0"></td>
                 <td style="border: none;"></td>
             </tr>
             <tr>
                 <td colspan="11" class="summary-label" style="font-size: 14px;">TOTAL</td>
-                <td colspan="2"><input type="number" id="sumTotal" class="readonly-cell summary-input" style="font-size: 14px;" readonly placeholder="0.00"></td>
+                <td colspan="2"><input type="number" id="sumTotal" class="readonly-cell summary-input" style="font-size: 14px;" readonly placeholder="0"></td>
                 <td style="border: none;"></td>
             </tr>
             <tr>
                 <td colspan="11" class="summary-label">ADD TOWING</td>
-                <td colspan="2"><input type="number" id="sumTowing" class="summary-input" placeholder="0.00"></td>
+                <td colspan="2"><input type="number" id="sumTowing" class="summary-input" placeholder="0"></td>
                 <td style="border: none;"></td>
             </tr>
             <tr>
                 <td colspan="11" class="summary-label" style="font-size: 14px;">GRAND TOTAL</td>
-                <td colspan="2"><input type="number" id="sumGrandTotal" class="readonly-cell summary-input" style="font-size: 14px; color: #c82333; background-color: #f8d7da;" readonly placeholder="0.00"></td>
+                <td colspan="2"><input type="number" id="sumGrandTotal" class="readonly-cell summary-input" style="font-size: 14px; color: #c82333; background-color: #f8d7da;" readonly placeholder="0"></td>
                 <td style="border: none;"></td>
             </tr>
             <tr>
                 <td colspan="11" class="summary-label">LESS SALVAGE</td>
-                <td colspan="2"><input type="number" id="sumSalvage" class="summary-input" placeholder="0.00"></td>
+                <td colspan="2"><input type="number" id="sumSalvage" class="summary-input" placeholder="0"></td>
                 <td style="border: none;"></td>
             </tr>
             <tr>
                 <td colspan="11" class="summary-label">LESS EXCESS</td>
-                <td colspan="2"><input type="number" id="sumExcess" class="summary-input" placeholder="0.00"></td>
+                <td colspan="2"><input type="number" id="sumExcess" class="summary-input" placeholder="0"></td>
                 <td style="border: none;"></td>
             </tr>
             <tr>
                 <td colspan="11" class="summary-label" style="font-size: 14px;">NET AMOUNT</td>
-                <td colspan="2"><input type="number" id="sumNetAmount" class="readonly-cell summary-input" style="font-size: 14px; background-color: #d1ecf1; color: #0c5460;" readonly placeholder="0.00"></td>
+                <td colspan="2"><input type="number" id="sumNetAmount" class="readonly-cell summary-input" style="font-size: 14px; background-color: #d1ecf1; color: #0c5460;" readonly placeholder="0"></td>
                 <td style="border: none;"></td>
             </tr>
             <tr>
                 <td colspan="10" class="summary-label">TDS %</td>
                 <td><input type="number" id="sumTdsPercent" class="summary-input" placeholder="0" step="0.1"></td>
-                <td colspan="2"><input type="number" id="sumTdsAmt" class="readonly-cell summary-input" readonly placeholder="0.00"></td>
+                <td colspan="2"><input type="number" id="sumTdsAmt" class="readonly-cell summary-input" readonly placeholder="0"></td>
                 <td style="border: none;"></td>
             </tr>
         </tbody>
     </table>
 
+    <!-- CONSOLIDATED GST BREAKUP -->
+    <table id="gstBreakupTable">
+        <tbody id="gstBreakupBody">
+            <!-- Dynamically populated via JavaScript -->
+        </tbody>
+    </table>
+
     <script>
-        // Event Listeners for automatic calculations
         document.getElementById('claimTable').addEventListener('input', calculateAll);
         
-        // Specific listener to Auto-fill 12.50 for painting without locking the field forever
         document.getElementById('claimTable').addEventListener('change', function(e) {
             if (e.target.classList.contains('cat-select')) {
                 const row = e.target.closest('tr');
@@ -307,10 +321,9 @@
             }
         });
 
-        // Core calculation function
         function calculateAll() {
-            let labTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0 };
-            let partTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0 };
+            let labTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0, breakup: {} };
+            let partTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0, breakup: {} };
 
             // 1. Process Labour Rows
             document.querySelectorAll('.labour-row').forEach(row => {
@@ -336,27 +349,31 @@
             };
             updateTotalRow('grandTotalRow', grandTotals);
 
-            // 4. Update Final Summary Section
-            let sumAmtBeforeGst = grandTotals.net;
-            let sumGst = grandTotals.gst;
-            let sumTotal = grandTotals.total;
+            // 4. Update Final Summary Section (Rounded to nearest Rupee)
+            let sumAmtBeforeGst = Math.round(grandTotals.net);
+            let sumGst = Math.round(grandTotals.gst);
+            let sumTotal = Math.round(grandTotals.total);
             
-            let towing = parseFloat(document.getElementById('sumTowing').value) || 0;
-            let finalGrandTotal = sumTotal + towing;
+            let towing = Math.round(parseFloat(document.getElementById('sumTowing').value) || 0);
+            let finalGrandTotal = Math.round(sumTotal + towing);
             
-            let salvage = parseFloat(document.getElementById('sumSalvage').value) || 0;
-            let excess = parseFloat(document.getElementById('sumExcess').value) || 0;
-            let netAmount = finalGrandTotal - salvage - excess;
+            let salvage = Math.round(parseFloat(document.getElementById('sumSalvage').value) || 0);
+            let excess = Math.round(parseFloat(document.getElementById('sumExcess').value) || 0);
+            let netAmount = Math.round(finalGrandTotal - salvage - excess);
 
             let tdsPercent = parseFloat(document.getElementById('sumTdsPercent').value) || 0;
-            let tdsAmt = netAmount * (tdsPercent / 100);
+            let tdsAmt = Math.round(netAmount * (tdsPercent / 100));
 
-            document.getElementById('sumAmtBeforeGst').value = sumAmtBeforeGst.toFixed(2);
-            document.getElementById('sumGst').value = sumGst.toFixed(2);
-            document.getElementById('sumTotal').value = sumTotal.toFixed(2);
-            document.getElementById('sumGrandTotal').value = finalGrandTotal.toFixed(2);
-            document.getElementById('sumNetAmount').value = netAmount.toFixed(2);
-            document.getElementById('sumTdsAmt').value = tdsAmt.toFixed(2);
+            // Assigning purely rounded integers
+            document.getElementById('sumAmtBeforeGst').value = sumAmtBeforeGst;
+            document.getElementById('sumGst').value = sumGst;
+            document.getElementById('sumTotal').value = sumTotal;
+            document.getElementById('sumGrandTotal').value = finalGrandTotal;
+            document.getElementById('sumNetAmount').value = netAmount;
+            document.getElementById('sumTdsAmt').value = tdsAmt;
+
+            // 5. Render GST Breakup
+            renderGstBreakup(labTotals.breakup, partTotals.breakup);
         }
 
         function processRow(row, totalsObj) {
@@ -392,6 +409,14 @@
             totalsObj.net += netAmt;
             totalsObj.gst += gstAmt;
             totalsObj.total += totalAmt;
+
+            // Collect data for GST Breakup
+            if (!totalsObj.breakup[gstPercent]) {
+                totalsObj.breakup[gstPercent] = { net: 0, gst: 0, total: 0 };
+            }
+            totalsObj.breakup[gstPercent].net += netAmt;
+            totalsObj.breakup[gstPercent].gst += gstAmt;
+            totalsObj.breakup[gstPercent].total += totalAmt;
         }
 
         function updateTotalRow(rowId, totalsObj) {
@@ -402,6 +427,58 @@
             row.querySelector('.t-net').value = totalsObj.net.toFixed(2);
             row.querySelector('.t-gst').value = totalsObj.gst.toFixed(2);
             row.querySelector('.t-total').value = totalsObj.total.toFixed(2);
+        }
+
+        function renderGstBreakup(labourBreakup, partsBreakup) {
+            const tbody = document.getElementById('gstBreakupBody');
+            let html = '';
+
+            const generateSection = (title, dataObj, prefixLabel) => {
+                html += `<tr>
+                            <th style="background-color: #ffe699; text-align: left;">${title}</th>
+                            <th style="background-color: #ffe699; text-align: right;">AMOUNT</th>
+                         </tr>`;
+                
+                let keys = Object.keys(dataObj).map(Number).sort((a, b) => a - b);
+                let counter = 1;
+
+                if (keys.length === 0) {
+                    html += `<tr><td colspan="2" style="height: 15px; border-left: none; border-right: none;"></td></tr>`;
+                    return;
+                }
+
+                keys.forEach(rate => {
+                    let data = dataObj[rate];
+                    if (data.net === 0 && data.gst === 0 && data.total === 0) return;
+
+                    if (rate === 0) {
+                        html += `<tr>
+                                    <td style="text-align: left; font-weight: bold;">${counter}. ${prefixLabel} - NO GST</td>
+                                    <td style="text-align: right;">${data.net.toFixed(2)}</td>
+                                 </tr>`;
+                    } else {
+                        html += `<tr>
+                                    <td style="text-align: left; font-weight: bold;">${counter}. ${prefixLabel}</td>
+                                    <td style="text-align: right;">${data.net.toFixed(2)}</td>
+                                 </tr>
+                                 <tr>
+                                    <td style="text-align: left;">GST ${rate}%</td>
+                                    <td style="text-align: right;">${data.gst.toFixed(2)}</td>
+                                 </tr>
+                                 <tr>
+                                    <td style="text-align: left;">TOTAL</td>
+                                    <td style="text-align: right;">${data.total.toFixed(2)}</td>
+                                 </tr>`;
+                    }
+                    html += `<tr><td colspan="2" style="height: 15px; border-left: none; border-right: none;"></td></tr>`;
+                    counter++;
+                });
+            };
+
+            generateSection('LABOUR GST-BREAK-UP', labourBreakup, 'LABOUR');
+            generateSection('PARTS GST-BREAK-UP', partsBreakup, 'PARTS');
+
+            tbody.innerHTML = html;
         }
 
         // Add / Remove Row Functions
