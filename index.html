@@ -59,7 +59,7 @@
         }
         .total-row input {
             font-weight: 900;
-            color: #000; /* Darker figures for Section Totals */
+            color: #000; 
         }
         
         .grand-total-row td {
@@ -69,8 +69,19 @@
         }
         .grand-total-row input {
             font-weight: 900;
-            color: #c82333; /* Distinct Red color for Grand Total figures */
+            color: #c82333; 
             background-color: #f8d7da;
+        }
+
+        /* Summary Section Formatting */
+        .summary-label {
+            text-align: right !important;
+            font-weight: bold;
+            padding-right: 15px !important;
+            background-color: #fdfdfd;
+        }
+        .summary-input {
+            font-weight: bold;
         }
 
         .btn {
@@ -117,7 +128,8 @@
                     </select>
                 </td>
                 <td><input type="number" class="assessed-input" placeholder="0.00"></td>
-                <td><input type="text" class="dep-input readonly-cell" value="0" readonly></td>
+                <!-- Editable DEP % for Labour -->
+                <td><input type="number" class="dep-input" value="0" step="0.01"></td>
                 <td><input type="number" class="gst-input" value="18"></td>
                 <td>
                     <select class="imt-select">
@@ -159,18 +171,18 @@
                 <td><input type="number" class="assessed-input" placeholder="0.00"></td>
                 <td>
                     <select class="dep-input">
-                        <option value="0" selected>0</option>
-                        <option value="0">&lt;= 6m</option>
-                        <option value="5">&gt; 6m, &lt;= 1y</option>
-                        <option value="10">&gt; 1y, &lt;= 2y</option>
-                        <option value="15">&gt; 2y, &lt;= 3y</option>
-                        <option value="25">&gt; 3y, &lt;= 4y</option>
-                        <option value="35">&gt; 4y, &lt;= 5y</option>
-                        <option value="40">&gt; 5y, &lt;= 10y</option>
-                        <option value="50">&gt; 10y</option>
-                        <option value="0">Glass</option>
-                        <option value="30">Fibre Glass</option>
-                        <option value="50">Rubber/Nylon/Plastic/Tyre/Tube/Batteries/Airbag</option>
+                        <option value="0" selected>0%</option>
+                        <option value="0">&lt;= 6m = 0%</option>
+                        <option value="5">&gt; 6m, &lt;= 1y = 5%</option>
+                        <option value="10">&gt; 1y, &lt;= 2y = 10%</option>
+                        <option value="15">&gt; 2y, &lt;= 3y = 15%</option>
+                        <option value="25">&gt; 3y, &lt;= 4y = 25%</option>
+                        <option value="35">&gt; 4y, &lt;= 5y = 35%</option>
+                        <option value="40">&gt; 5y, &lt;= 10y = 40%</option>
+                        <option value="50">&gt; 10y = 50%</option>
+                        <option value="0">Glass = 0%</option>
+                        <option value="30">Fibre Glass = 30%</option>
+                        <option value="50">Rubber/Nylon... = 50%</option>
                     </select>
                 </td>
                 <td><input type="number" class="gst-input" value="18"></td>
@@ -220,12 +232,80 @@
                 <td></td>
             </tr>
         </tbody>
+        
+        <!-- FINAL SUMMARY SECTION (From image_6f67a5.png) -->
+        <tbody id="finalSummaryBody">
+            <!-- Empty row for spacing -->
+            <tr><td colspan="14" style="border: none; height: 15px;"></td></tr>
+            
+            <tr>
+                <td colspan="11" class="summary-label">AMOUNT BEFORE GST</td>
+                <td colspan="2"><input type="number" id="sumAmtBeforeGst" class="readonly-cell summary-input" readonly placeholder="0.00"></td>
+                <td style="border: none;"></td>
+            </tr>
+            <tr>
+                <td colspan="11" class="summary-label">ADD GST</td>
+                <td colspan="2"><input type="number" id="sumGst" class="readonly-cell summary-input" readonly placeholder="0.00"></td>
+                <td style="border: none;"></td>
+            </tr>
+            <tr>
+                <td colspan="11" class="summary-label" style="font-size: 14px;">TOTAL</td>
+                <td colspan="2"><input type="number" id="sumTotal" class="readonly-cell summary-input" style="font-size: 14px;" readonly placeholder="0.00"></td>
+                <td style="border: none;"></td>
+            </tr>
+            <tr>
+                <td colspan="11" class="summary-label">ADD TOWING</td>
+                <td colspan="2"><input type="number" id="sumTowing" class="summary-input" placeholder="0.00"></td>
+                <td style="border: none;"></td>
+            </tr>
+            <tr>
+                <td colspan="11" class="summary-label" style="font-size: 14px;">GRAND TOTAL</td>
+                <td colspan="2"><input type="number" id="sumGrandTotal" class="readonly-cell summary-input" style="font-size: 14px; color: #c82333; background-color: #f8d7da;" readonly placeholder="0.00"></td>
+                <td style="border: none;"></td>
+            </tr>
+            <tr>
+                <td colspan="11" class="summary-label">LESS SALVAGE</td>
+                <td colspan="2"><input type="number" id="sumSalvage" class="summary-input" placeholder="0.00"></td>
+                <td style="border: none;"></td>
+            </tr>
+            <tr>
+                <td colspan="11" class="summary-label">LESS EXCESS</td>
+                <td colspan="2"><input type="number" id="sumExcess" class="summary-input" placeholder="0.00"></td>
+                <td style="border: none;"></td>
+            </tr>
+            <tr>
+                <td colspan="11" class="summary-label" style="font-size: 14px;">NET AMOUNT</td>
+                <td colspan="2"><input type="number" id="sumNetAmount" class="readonly-cell summary-input" style="font-size: 14px; background-color: #d1ecf1; color: #0c5460;" readonly placeholder="0.00"></td>
+                <td style="border: none;"></td>
+            </tr>
+            <tr>
+                <td colspan="10" class="summary-label">TDS %</td>
+                <td><input type="number" id="sumTdsPercent" class="summary-input" placeholder="0" step="0.1"></td>
+                <td colspan="2"><input type="number" id="sumTdsAmt" class="readonly-cell summary-input" readonly placeholder="0.00"></td>
+                <td style="border: none;"></td>
+            </tr>
+        </tbody>
     </table>
 
     <script>
         // Event Listeners for automatic calculations
         document.getElementById('claimTable').addEventListener('input', calculateAll);
-        document.getElementById('claimTable').addEventListener('change', calculateAll);
+        
+        // Specific listener to Auto-fill 12.50 for painting without locking the field forever
+        document.getElementById('claimTable').addEventListener('change', function(e) {
+            if (e.target.classList.contains('cat-select')) {
+                const row = e.target.closest('tr');
+                if (row.classList.contains('labour-row')) {
+                    const depInput = row.querySelector('.dep-input');
+                    if (e.target.value === 'painting') {
+                        depInput.value = '12.50';
+                    } else {
+                        depInput.value = '0';
+                    }
+                    calculateAll();
+                }
+            }
+        });
 
         // Core calculation function
         function calculateAll() {
@@ -234,15 +314,6 @@
 
             // 1. Process Labour Rows
             document.querySelectorAll('.labour-row').forEach(row => {
-                const cat = row.querySelector('.cat-select').value;
-                const depInput = row.querySelector('.dep-input');
-                
-                // Requirement 1: Painting changes Dep% to 12.50
-                if (cat === 'painting') {
-                    depInput.value = '12.50';
-                } else {
-                    depInput.value = '0';
-                }
                 processRow(row, labTotals);
             });
 
@@ -264,6 +335,28 @@
                 total: labTotals.total + partTotals.total
             };
             updateTotalRow('grandTotalRow', grandTotals);
+
+            // 4. Update Final Summary Section
+            let sumAmtBeforeGst = grandTotals.net;
+            let sumGst = grandTotals.gst;
+            let sumTotal = grandTotals.total;
+            
+            let towing = parseFloat(document.getElementById('sumTowing').value) || 0;
+            let finalGrandTotal = sumTotal + towing;
+            
+            let salvage = parseFloat(document.getElementById('sumSalvage').value) || 0;
+            let excess = parseFloat(document.getElementById('sumExcess').value) || 0;
+            let netAmount = finalGrandTotal - salvage - excess;
+
+            let tdsPercent = parseFloat(document.getElementById('sumTdsPercent').value) || 0;
+            let tdsAmt = netAmount * (tdsPercent / 100);
+
+            document.getElementById('sumAmtBeforeGst').value = sumAmtBeforeGst.toFixed(2);
+            document.getElementById('sumGst').value = sumGst.toFixed(2);
+            document.getElementById('sumTotal').value = sumTotal.toFixed(2);
+            document.getElementById('sumGrandTotal').value = finalGrandTotal.toFixed(2);
+            document.getElementById('sumNetAmount').value = netAmount.toFixed(2);
+            document.getElementById('sumTdsAmt').value = tdsAmt.toFixed(2);
         }
 
         function processRow(row, totalsObj) {
@@ -272,34 +365,27 @@
             let gstPercent = parseFloat(row.querySelector('.gst-input').value) || 0;
             let imt23Select = row.querySelector('.imt-select').value;
 
-            // Req 2: Second Assessed column reflects the first
             let assessedCopy = assessedInput;
             row.querySelector('.assessed-copy').value = assessedCopy.toFixed(2);
 
-            // Req 3: DEP AMT = Assessed Before Dep * DEP % / 100
             let depAmt = assessedCopy * (depPercent / 100);
             row.querySelector('.dep-amt').value = depAmt.toFixed(2);
 
-            // Req 4: IMT 23 N/Y = 'Y' -> (Assessed-Before Dep - DEP AMT) / 2
             let imtAmt = 0;
             if (imt23Select === 'Y') {
                 imtAmt = (assessedCopy - depAmt) / 2;
             }
             row.querySelector('.imt-amt').value = imtAmt.toFixed(2);
 
-            // Req 5: NET AMT = Assessed-Before Dep - DEP AMT - IMT 23 DEP AMT
             let netAmt = assessedCopy - depAmt - imtAmt;
             row.querySelector('.net-amt').value = netAmt.toFixed(2);
 
-            // Req 6: GST AMT = NET AMT * GST % / 100
             let gstAmt = netAmt * (gstPercent / 100);
             row.querySelector('.gst-amt').value = gstAmt.toFixed(2);
 
-            // Row Total
             let totalAmt = netAmt + gstAmt;
             row.querySelector('.total-amt').value = totalAmt.toFixed(2);
 
-            // Add to section totals
             totalsObj.assessed += assessedCopy;
             totalsObj.dep += depAmt;
             totalsObj.imt23 += imtAmt;
@@ -337,21 +423,21 @@
                 : `<td><input type="text" placeholder="Enter Part Name" style="text-align: left;"></td>`;
 
             const depHTML = type === 'labour'
-                ? `<td><input type="text" class="dep-input readonly-cell" value="0" readonly></td>`
+                ? `<td><input type="number" class="dep-input" value="0" step="0.01"></td>`
                 : `<td>
                     <select class="dep-input">
-                        <option value="0" selected>0</option>
-                        <option value="0">&lt;= 6m</option>
-                        <option value="5">&gt; 6m, &lt;= 1y</option>
-                        <option value="10">&gt; 1y, &lt;= 2y</option>
-                        <option value="15">&gt; 2y, &lt;= 3y</option>
-                        <option value="25">&gt; 3y, &lt;= 4y</option>
-                        <option value="35">&gt; 4y, &lt;= 5y</option>
-                        <option value="40">&gt; 5y, &lt;= 10y</option>
-                        <option value="50">&gt; 10y</option>
-                        <option value="0">Glass</option>
-                        <option value="30">Fibre Glass</option>
-                        <option value="50">Rubber/Nylon/Plastic/Tyre/Tube/Batteries/Airbag</option>
+                        <option value="0" selected>0%</option>
+                        <option value="0">&lt;= 6m = 0%</option>
+                        <option value="5">&gt; 6m, &lt;= 1y = 5%</option>
+                        <option value="10">&gt; 1y, &lt;= 2y = 10%</option>
+                        <option value="15">&gt; 2y, &lt;= 3y = 15%</option>
+                        <option value="25">&gt; 3y, &lt;= 4y = 25%</option>
+                        <option value="35">&gt; 4y, &lt;= 5y = 35%</option>
+                        <option value="40">&gt; 5y, &lt;= 10y = 40%</option>
+                        <option value="50">&gt; 10y = 50%</option>
+                        <option value="0">Glass = 0%</option>
+                        <option value="30">Fibre Glass = 30%</option>
+                        <option value="50">Rubber/Nylon... = 50%</option>
                     </select>
                    </td>`;
 
