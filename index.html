@@ -24,12 +24,12 @@
             background-color: #f2f2f2;
             font-size: 12px;
         }
-        /* Column Width Controls */
+        /* Adjusted Column Widths */
         .col-sno { width: 40px; }
-        .col-cat { width: 180px; }
-        .col-amt { width: 90px; }
-        .col-narrow { width: 60px; } /* For DEP %, GST %, etc. */
-        .col-action { width: 50px; }
+        .col-cat { width: 170px; }
+        .col-amt { width: 95px; }
+        .col-narrow { width: 75px; } 
+        .col-action { width: 40px; }
         
         select, input {
             width: 100%;
@@ -39,8 +39,9 @@
             text-align: right;
         }
         select { text-align: left; }
+        
         .spacer {
-            width: 15px;
+            width: 10px;
             border-top: none;
             border-bottom: none;
             background-color: #fff;
@@ -48,15 +49,30 @@
         .readonly-cell {
             background-color: #e9ecef;
             cursor: not-allowed;
+            color: #333;
         }
+        
+        /* Formatting for Totals to make them distinct */
         .total-row td {
-            font-weight: bold;
             background-color: #f9f9f9;
-        }
-        .grand-total-row td {
             font-weight: bold;
-            background-color: #e2e3e5;
         }
+        .total-row input {
+            font-weight: 900;
+            color: #000; /* Darker figures for Section Totals */
+        }
+        
+        .grand-total-row td {
+            background-color: #d1ecf1;
+            font-weight: bold;
+            color: #0c5460;
+        }
+        .grand-total-row input {
+            font-weight: 900;
+            color: #c82333; /* Distinct Red color for Grand Total figures */
+            background-color: #f8d7da;
+        }
+
         .btn {
             cursor: pointer;
             padding: 2px 6px;
@@ -80,13 +96,13 @@
                 <th class="col-narrow">GST %</th>
                 <th class="col-narrow">IMT 23<br>N/Y</th>
                 <th class="spacer"></th>
-                <th class="col-amt">Assessed Amt<br>Before Dep</th>
+                <th class="col-amt">Assessed-<br>Before Dep</th>
                 <th class="col-narrow">DEP AMT</th>
                 <th class="col-narrow">IMT 23<br>DEP AMT</th>
                 <th class="col-amt">NET AMT</th>
                 <th class="col-narrow">GST AMT</th>
                 <th class="col-amt">TOTAL</th>
-                <th class="col-action">Action</th>
+                <th class="col-action">Act</th>
             </tr>
         </thead>
         
@@ -95,42 +111,42 @@
             <tr class="labour-row">
                 <td class="sno">1</td>
                 <td>
-                    <select>
+                    <select class="cat-select">
                         <option value="labour">LABOUR</option>
                         <option value="painting">PAINTING (Labour + Material)</option>
                     </select>
                 </td>
-                <td><input type="number" placeholder="0.00"></td>
-                <td><input type="number" placeholder="0"></td>
-                <td><input type="number" value="18"></td>
+                <td><input type="number" class="assessed-input" placeholder="0.00"></td>
+                <td><input type="text" class="dep-input readonly-cell" value="0" readonly></td>
+                <td><input type="number" class="gst-input" value="18"></td>
                 <td>
-                    <select>
+                    <select class="imt-select">
                         <option value="N" selected>N</option>
                         <option value="Y">Y</option>
                     </select>
                 </td>
                 <td class="spacer"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0.00"></td>
                 <td><button type="button" class="btn btn-remove" onclick="removeRow(this, 'labour')">-</button></td>
             </tr>
         </tbody>
         <tbody>
-            <tr class="total-row">
+            <tr class="total-row" id="labourTotalRow">
                 <td></td>
                 <td style="text-align: left;">LABOUR TOTAL</td>
                 <td></td><td></td><td></td><td></td>
                 <td class="spacer"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-net readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-total readonly-cell" readonly placeholder="0.00"></td>
                 <td><button type="button" class="btn btn-add" onclick="addRow('labour')">+</button></td>
             </tr>
         </tbody>
@@ -140,113 +156,240 @@
             <tr class="parts-row">
                 <td class="sno">1</td>
                 <td><input type="text" placeholder="Enter Part Name" style="text-align: left;"></td>
-                <td><input type="number" placeholder="0.00"></td>
-                <td><input type="number" placeholder="0"></td>
-                <td><input type="number" value="18"></td>
+                <td><input type="number" class="assessed-input" placeholder="0.00"></td>
                 <td>
-                    <select>
+                    <select class="dep-input">
+                        <option value="0" selected>0</option>
+                        <option value="0">&lt;= 6m</option>
+                        <option value="5">&gt; 6m, &lt;= 1y</option>
+                        <option value="10">&gt; 1y, &lt;= 2y</option>
+                        <option value="15">&gt; 2y, &lt;= 3y</option>
+                        <option value="25">&gt; 3y, &lt;= 4y</option>
+                        <option value="35">&gt; 4y, &lt;= 5y</option>
+                        <option value="40">&gt; 5y, &lt;= 10y</option>
+                        <option value="50">&gt; 10y</option>
+                        <option value="0">Glass</option>
+                        <option value="30">Fibre Glass</option>
+                        <option value="50">Rubber/Nylon/Plastic/Tyre/Tube/Batteries/Airbag</option>
+                    </select>
+                </td>
+                <td><input type="number" class="gst-input" value="18"></td>
+                <td>
+                    <select class="imt-select">
                         <option value="N" selected>N</option>
                         <option value="Y">Y</option>
                     </select>
                 </td>
                 <td class="spacer"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0.00"></td>
                 <td><button type="button" class="btn btn-remove" onclick="removeRow(this, 'parts')">-</button></td>
             </tr>
         </tbody>
         <tbody>
-            <tr class="total-row">
+            <tr class="total-row" id="partsTotalRow">
                 <td></td>
                 <td style="text-align: left;">PARTS TOTAL</td>
                 <td></td><td></td><td></td><td></td>
                 <td class="spacer"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-net readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-total readonly-cell" readonly placeholder="0.00"></td>
                 <td><button type="button" class="btn btn-add" onclick="addRow('parts')">+</button></td>
             </tr>
             
             <!-- GRAND TOTAL -->
-            <tr class="grand-total-row">
+            <tr class="grand-total-row" id="grandTotalRow">
                 <td></td>
                 <td style="text-align: left;">GRAND TOTAL</td>
                 <td></td><td></td><td></td><td></td>
                 <td class="spacer"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-net readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="t-total readonly-cell" readonly placeholder="0.00"></td>
                 <td></td>
             </tr>
         </tbody>
     </table>
 
     <script>
+        // Event Listeners for automatic calculations
+        document.getElementById('claimTable').addEventListener('input', calculateAll);
+        document.getElementById('claimTable').addEventListener('change', calculateAll);
+
+        // Core calculation function
+        function calculateAll() {
+            let labTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0 };
+            let partTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0 };
+
+            // 1. Process Labour Rows
+            document.querySelectorAll('.labour-row').forEach(row => {
+                const cat = row.querySelector('.cat-select').value;
+                const depInput = row.querySelector('.dep-input');
+                
+                // Requirement 1: Painting changes Dep% to 12.50
+                if (cat === 'painting') {
+                    depInput.value = '12.50';
+                } else {
+                    depInput.value = '0';
+                }
+                processRow(row, labTotals);
+            });
+
+            // 2. Process Parts Rows
+            document.querySelectorAll('.parts-row').forEach(row => {
+                processRow(row, partTotals);
+            });
+
+            // 3. Update Totals
+            updateTotalRow('labourTotalRow', labTotals);
+            updateTotalRow('partsTotalRow', partTotals);
+
+            let grandTotals = {
+                assessed: labTotals.assessed + partTotals.assessed,
+                dep: labTotals.dep + partTotals.dep,
+                imt23: labTotals.imt23 + partTotals.imt23,
+                net: labTotals.net + partTotals.net,
+                gst: labTotals.gst + partTotals.gst,
+                total: labTotals.total + partTotals.total
+            };
+            updateTotalRow('grandTotalRow', grandTotals);
+        }
+
+        function processRow(row, totalsObj) {
+            let assessedInput = parseFloat(row.querySelector('.assessed-input').value) || 0;
+            let depPercent = parseFloat(row.querySelector('.dep-input').value) || 0;
+            let gstPercent = parseFloat(row.querySelector('.gst-input').value) || 0;
+            let imt23Select = row.querySelector('.imt-select').value;
+
+            // Req 2: Second Assessed column reflects the first
+            let assessedCopy = assessedInput;
+            row.querySelector('.assessed-copy').value = assessedCopy.toFixed(2);
+
+            // Req 3: DEP AMT = Assessed Before Dep * DEP % / 100
+            let depAmt = assessedCopy * (depPercent / 100);
+            row.querySelector('.dep-amt').value = depAmt.toFixed(2);
+
+            // Req 4: IMT 23 N/Y = 'Y' -> (Assessed-Before Dep - DEP AMT) / 2
+            let imtAmt = 0;
+            if (imt23Select === 'Y') {
+                imtAmt = (assessedCopy - depAmt) / 2;
+            }
+            row.querySelector('.imt-amt').value = imtAmt.toFixed(2);
+
+            // Req 5: NET AMT = Assessed-Before Dep - DEP AMT - IMT 23 DEP AMT
+            let netAmt = assessedCopy - depAmt - imtAmt;
+            row.querySelector('.net-amt').value = netAmt.toFixed(2);
+
+            // Req 6: GST AMT = NET AMT * GST % / 100
+            let gstAmt = netAmt * (gstPercent / 100);
+            row.querySelector('.gst-amt').value = gstAmt.toFixed(2);
+
+            // Row Total
+            let totalAmt = netAmt + gstAmt;
+            row.querySelector('.total-amt').value = totalAmt.toFixed(2);
+
+            // Add to section totals
+            totalsObj.assessed += assessedCopy;
+            totalsObj.dep += depAmt;
+            totalsObj.imt23 += imtAmt;
+            totalsObj.net += netAmt;
+            totalsObj.gst += gstAmt;
+            totalsObj.total += totalAmt;
+        }
+
+        function updateTotalRow(rowId, totalsObj) {
+            const row = document.getElementById(rowId);
+            row.querySelector('.t-assessed').value = totalsObj.assessed.toFixed(2);
+            row.querySelector('.t-dep').value = totalsObj.dep.toFixed(2);
+            row.querySelector('.t-imt').value = totalsObj.imt23.toFixed(2);
+            row.querySelector('.t-net').value = totalsObj.net.toFixed(2);
+            row.querySelector('.t-gst').value = totalsObj.gst.toFixed(2);
+            row.querySelector('.t-total').value = totalsObj.total.toFixed(2);
+        }
+
+        // Add / Remove Row Functions
         function addRow(type) {
             const tbodyId = type === 'labour' ? 'labourBody' : 'partsBody';
             const rowClass = type === 'labour' ? 'labour-row' : 'parts-row';
             const tbody = document.getElementById(tbodyId);
             
-            // Create a new row
             const newRow = document.createElement('tr');
             newRow.className = rowClass;
             
-            // Define Category cell based on type
-            const categoryCell = type === 'labour' 
+            const categoryHTML = type === 'labour' 
                 ? `<td>
-                    <select>
+                    <select class="cat-select">
                         <option value="labour">LABOUR</option>
                         <option value="painting">PAINTING (Labour + Material)</option>
                     </select>
                    </td>`
                 : `<td><input type="text" placeholder="Enter Part Name" style="text-align: left;"></td>`;
 
-            // Inner HTML of the new row (includes default GST 18)
+            const depHTML = type === 'labour'
+                ? `<td><input type="text" class="dep-input readonly-cell" value="0" readonly></td>`
+                : `<td>
+                    <select class="dep-input">
+                        <option value="0" selected>0</option>
+                        <option value="0">&lt;= 6m</option>
+                        <option value="5">&gt; 6m, &lt;= 1y</option>
+                        <option value="10">&gt; 1y, &lt;= 2y</option>
+                        <option value="15">&gt; 2y, &lt;= 3y</option>
+                        <option value="25">&gt; 3y, &lt;= 4y</option>
+                        <option value="35">&gt; 4y, &lt;= 5y</option>
+                        <option value="40">&gt; 5y, &lt;= 10y</option>
+                        <option value="50">&gt; 10y</option>
+                        <option value="0">Glass</option>
+                        <option value="30">Fibre Glass</option>
+                        <option value="50">Rubber/Nylon/Plastic/Tyre/Tube/Batteries/Airbag</option>
+                    </select>
+                   </td>`;
+
             newRow.innerHTML = `
                 <td class="sno"></td>
-                ${categoryCell}
-                <td><input type="number" placeholder="0.00"></td>
-                <td><input type="number" placeholder="0"></td>
-                <td><input type="number" value="18"></td>
+                ${categoryHTML}
+                <td><input type="number" class="assessed-input" placeholder="0.00"></td>
+                ${depHTML}
+                <td><input type="number" class="gst-input" value="18"></td>
                 <td>
-                    <select>
+                    <select class="imt-select">
                         <option value="N" selected>N</option>
                         <option value="Y">Y</option>
                     </select>
                 </td>
                 <td class="spacer"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0.00"></td>
                 <td><button type="button" class="btn btn-remove" onclick="removeRow(this, '${type}')">-</button></td>
             `;
             
             tbody.appendChild(newRow);
             updateSerialNumbers(type);
+            calculateAll(); // Recalculate totals
         }
 
         function removeRow(button, type) {
             const tbodyId = type === 'labour' ? 'labourBody' : 'partsBody';
             const tbody = document.getElementById(tbodyId);
             
-            // Ensure at least one row remains
             if (tbody.getElementsByTagName('tr').length > 1) {
-                const row = button.closest('tr');
-                row.remove();
+                button.closest('tr').remove();
                 updateSerialNumbers(type);
+                calculateAll(); // Recalculate totals
             } else {
                 alert('You must have at least one row in this section.');
             }
@@ -255,11 +398,13 @@
         function updateSerialNumbers(type) {
             const tbodyId = type === 'labour' ? 'labourBody' : 'partsBody';
             const rows = document.getElementById(tbodyId).getElementsByTagName('tr');
-            
             for (let i = 0; i < rows.length; i++) {
                 rows[i].querySelector('.sno').textContent = i + 1;
             }
         }
+
+        // Initialize calculations on load
+        window.onload = calculateAll;
     </script>
 </body>
 </html>
