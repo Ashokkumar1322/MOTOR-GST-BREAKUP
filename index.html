@@ -639,15 +639,21 @@
             return filename ? filename : "Claim_Calculation";
         }
 
-        // Export to PDF Logic
+        // Export to PDF Logic - FIXED FOR LEFT CLIPPING & LANDSCAPE
         function exportToPdf() {
+            // Scroll to the absolute top-left of the window first.
+            // This prevents html2canvas from cutting off the left or top 
+            // if the user had scrolled down or to the right.
+            window.scrollTo(0, 0); 
+            
             const element = document.getElementById('calculatorContainer');
             const opt = {
-                margin:       0.2, // Small margin to maximize space
+                margin:       0.2, 
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                // windowWidth forces the layout to render wide before shrinking it down
-                html2canvas:  { scale: 2, windowWidth: 1500 }, 
+                // Force scroll positions to 0 inside html2canvas as an extra safeguard
+                html2canvas:  { scale: 2, scrollX: 0, scrollY: 0 }, 
+                // Force A4 Landscape explicitly
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
             };
             html2pdf().set(opt).from(element).save();
