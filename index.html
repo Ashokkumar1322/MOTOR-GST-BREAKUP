@@ -162,8 +162,8 @@
         /* Print Specific CSS */
         @media print {
             @page {
-                size: landscape;
-                margin: 10mm;
+                size: A4 landscape;
+                margin: 5mm;
             }
             .no-print {
                 display: none !important;
@@ -189,7 +189,7 @@
     <div id="calculatorContainer">
         <h2>Motor Insurance Claim Calculator</h2>
         
-        <!-- EXPORT BUTTONS ARE HERE NOW -->
+        <!-- EXPORT BUTTONS -->
         <div class="export-controls no-print">
             <button id="btnExportExcel" class="btn btn-export" onclick="exportToExcel()">📊 Download as Excel</button>
             <button id="btnExportPdf" class="btn btn-export" onclick="exportToPdf()">📄 Download as PDF</button>
@@ -643,10 +643,11 @@
         function exportToPdf() {
             const element = document.getElementById('calculatorContainer');
             const opt = {
-                margin:       0.3,
+                margin:       0.2, // Small margin to maximize space
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2 },
+                // windowWidth forces the layout to render wide before shrinking it down
+                html2canvas:  { scale: 2, windowWidth: 1500 }, 
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
             };
             html2pdf().set(opt).from(element).save();
