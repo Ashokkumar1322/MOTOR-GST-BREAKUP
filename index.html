@@ -36,11 +36,11 @@
         }
 
         /* Adjusted Column Widths for PDF space saving */
-        .col-sno { width: 40px; }
+        .col-sno { width: 35px; }
         .col-cat { width: 170px; }
-        .col-amt { width: 75px; } /* Reduced from 95px since decimals are gone */
-        .col-narrow { width: 55px; } /* Reduced from 75px for GST/IMT */
-        .col-action { width: 60px; } 
+        .col-amt { width: 70px; } 
+        .col-narrow { width: 45px; } /* Slimmed down for GST % and IMT 23 */
+        .col-action { width: 45px; } /* Slimmed down for ROW -/+ */
         
         select, input {
             width: 100%;
@@ -456,7 +456,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td style="text-align: left; font-weight: bold;">SURVEY FEES APPROVED FOR Rs.</td>
+                        <td style="text-align: left; font-weight: bold;">FEES APPROVED FOR Rs.</td>
                         <td><input type="number" placeholder="0"></td>
                     </tr>
                     <tr>
@@ -628,33 +628,36 @@
             return filename ? filename : "Claim_Calculation";
         }
 
-        // Export to PDF Logic - Naturally scales to fit A4 Landscape without forced widths
+        // Export to PDF Logic - FIXED WITH HARD WIDTH CAPTURE SO RIGHT EDGE NEVER MISSING
         function exportToPdf() {
             window.scrollTo(0, 0); 
             
             const element = document.getElementById('calculatorContainer');
-            
-            // Momentarily remove body margin so the capture starts perfectly at x=0, y=0
             const originalBodyMargin = document.body.style.margin;
+            const originalWidth = element.style.width;
+            
+            // Momentarily remove margin and FORCE a specific width wrapper to ensure camera doesn't chop the table
             document.body.style.margin = '0';
+            element.style.width = '1100px'; // Forced wide enough to perfectly fit the slimmed down table
             
             const opt = {
-                margin:       5, // 5mm gives enough space to pull signature to page 2
+                margin:       5, 
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  { 
                     scale: 2, 
                     scrollX: 0, 
-                    scrollY: 0
-                    // NO hardcoded windowWidth anymore! The slimmer table handles itself perfectly.
+                    scrollY: 0,
+                    windowWidth: 1100 // Aligns with forced width, guaranteeing 100% of the right side is captured
                 }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
                 pagebreak:    { mode: 'css', avoid: ['tr', '.bottom-sections'] }
             };
 
             html2pdf().set(opt).from(element).save().then(() => {
-                // Restore original margin
+                // Restore styling immediately after generating
                 document.body.style.margin = originalBodyMargin;
+                element.style.width = originalWidth;
             });
         }
 
@@ -724,7 +727,9 @@
             let sumGst = Math.round(grandTotals.gst);
             let sumTotal = Math.round(grandTotals.total);
             
-            let towing = Math.round(parseFloat(document.getElementById('sumTowing').value) || 0);
+            let towingUnrounded = parseFloat(document.getElementById('sumTowing').value) || 0;
+            let towing = Math.round(towingUnrounded);
+            
             let finalGrandTotal = Math.round(sumTotal + towing);
             
             let salvage = Math.round(parseFloat(document.getElementById('sumSalvage').value) || 0);
@@ -775,32 +780,32 @@
             renderGstBreakup(labTotals.breakup, partTotals.breakup);
 
             // =====================================================================
-            // NON-STANDARD REVERSE CALCULATION LOGIC
+            // NON-STANDARD REVERSE CALCULATION LOGIC (UPDATED FOR TOWING)
             // =====================================================================
             const nonStdPctInput = document.getElementById('nonStdPct');
             const nonStdAmtInput = document.getElementById('nonStdAmt');
             const isPctMode = document.querySelector('input[name="nonStdToggle"]:checked').value === 'pct';
             
-            let targetTotal = 0;
+            let targetGrandTotal = 0;
             let isNonStdActive = false;
-            let exactOriginalTotal = grandTotals.total; 
+            let exactOriginalGrandTotal = grandTotals.total + towingUnrounded; 
             
             if (isPctMode && parseFloat(nonStdPctInput.value) > 0) {
-                targetTotal = exactOriginalTotal * (parseFloat(nonStdPctInput.value) / 100);
+                targetGrandTotal = exactOriginalGrandTotal * (parseFloat(nonStdPctInput.value) / 100);
                 isNonStdActive = true;
             } else if (!isPctMode && parseFloat(nonStdAmtInput.value) > 0) {
-                targetTotal = parseFloat(nonStdAmtInput.value);
+                targetGrandTotal = parseFloat(nonStdAmtInput.value);
                 isNonStdActive = true;
             }
 
             const nsSummaryTable = document.getElementById('nonStdSummaryTable');
             const nsGstBreakupTable = document.getElementById('nonStdGstBreakupTable');
 
-            if (isNonStdActive && exactOriginalTotal > 0) {
+            if (isNonStdActive && exactOriginalGrandTotal > 0) {
                 nsSummaryTable.style.display = 'table';
                 nsGstBreakupTable.style.display = 'table';
                 
-                const kFactor = targetTotal / exactOriginalTotal;
+                const kFactor = targetGrandTotal / exactOriginalGrandTotal;
                 
                 let nsLabBreakup = {};
                 let nsPartBreakup = {};
@@ -831,6 +836,9 @@
 
                 document.querySelectorAll('.labour-row').forEach(row => processNsRow(row, nsLabBreakup));
                 document.querySelectorAll('.parts-row').forEach(row => processNsRow(row, nsPartBreakup));
+
+                // NEW: Towing is now reduced by the same kFactor
+                let nsTowing = towingUnrounded * kFactor;
 
                 // TDS Calculation for Non-Standard
                 let nsTotalGstNet = allNsItems.filter(i => i.gst > 0).reduce((sum, i) => sum + i.net, 0);
@@ -865,11 +873,14 @@
                 document.getElementById('nsAmtBeforeGst').value = Math.round(nsAmtBeforeGst);
                 document.getElementById('nsGst').value = Math.round(nsGstTotal);
                 document.getElementById('nsTotal').value = Math.round(nsTotalAmt);
-                document.getElementById('nsTowing').value = towing;
-                document.getElementById('nsGrandTotal').value = Math.round(nsTotalAmt + towing);
+                document.getElementById('nsTowing').value = Math.round(nsTowing);
+                
+                // nsGrandTotal will now perfectly match the targetGrandTotal (rounding errors aside)
+                document.getElementById('nsGrandTotal').value = Math.round(nsTotalAmt + nsTowing);
+                
                 document.getElementById('nsSalvage').value = salvage;
                 document.getElementById('nsExcess').value = excess;
-                document.getElementById('nsNetAmount').value = Math.round(nsTotalAmt + towing - salvage - excess);
+                document.getElementById('nsNetAmount').value = Math.round(nsTotalAmt + nsTowing - salvage - excess);
                 document.getElementById('nsTdsPercent').value = nsAutoTdsPercent;
                 document.getElementById('nsTdsAmt').value = Math.round(nsTdsAmt);
                 
