@@ -76,14 +76,14 @@
         /* Layout for Bottom Section */
         .bottom-sections {
             display: flex;
-            gap: 40px;
+            gap: 20px;
             align-items: flex-start;
             margin-top: 10px;
         }
 
         /* Summary Section Formatting */
         #summaryTable {
-            width: 350px;
+            width: 320px;
             margin-bottom: 0;
         }
         #summaryTable td {
@@ -100,12 +100,22 @@
 
         /* GST Breakup Table Layout */
         #gstBreakupTable {
-            width: 350px;
-            font-size: 14px;
+            width: 300px;
+            font-size: 13px;
             margin-bottom: 0;
         }
         #gstBreakupTable td {
-            padding: 6px;
+            padding: 5px;
+        }
+
+        /* Claim Particulars Table Layout */
+        #claimParticularsTable {
+            width: 380px;
+            font-size: 12px;
+            margin-bottom: 0;
+        }
+        #claimParticularsTable td {
+            padding: 4px;
         }
 
         .btn {
@@ -157,7 +167,7 @@
                             <option value="painting">PAINTING (Labour + Material)</option>
                         </select>
                     </td>
-                    <td><input type="number" class="assessed-input" placeholder="0.00"></td>
+                    <td><input type="number" class="assessed-input" placeholder="0"></td>
                     <td><input type="number" class="dep-input" value="0" step="0.01"></td>
                     <td><input type="number" class="gst-input" value="18"></td>
                     <td>
@@ -167,12 +177,12 @@
                         </select>
                     </td>
                     <td class="spacer"></td>
-                    <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0.00"></td>
+                    <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0"></td>
                     <td><button type="button" class="btn btn-remove" onclick="removeRow(this, 'labour')">-</button></td>
                 </tr>
             </tbody>
@@ -182,12 +192,12 @@
                     <td style="text-align: left;">LABOUR TOTAL</td>
                     <td></td><td></td><td></td><td></td>
                     <td class="spacer"></td>
-                    <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-net readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-total readonly-cell" readonly placeholder="0.00"></td>
+                    <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-net readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-total readonly-cell" readonly placeholder="0"></td>
                     <td><button type="button" class="btn btn-add" onclick="addRow('labour')">+</button></td>
                 </tr>
             </tbody>
@@ -197,7 +207,7 @@
                 <tr class="parts-row">
                     <td class="sno">1</td>
                     <td><input type="text" placeholder="Enter Part Name" style="text-align: left;"></td>
-                    <td><input type="number" class="assessed-input" placeholder="0.00"></td>
+                    <td><input type="number" class="assessed-input" placeholder="0"></td>
                     <td>
                         <select class="dep-input">
                             <option value="0" selected>0%</option>
@@ -222,12 +232,12 @@
                         </select>
                     </td>
                     <td class="spacer"></td>
-                    <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0.00"></td>
+                    <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0"></td>
                     <td><button type="button" class="btn btn-remove" onclick="removeRow(this, 'parts')">-</button></td>
                 </tr>
             </tbody>
@@ -237,12 +247,12 @@
                     <td style="text-align: left;">PARTS TOTAL</td>
                     <td></td><td></td><td></td><td></td>
                     <td class="spacer"></td>
-                    <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-net readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-total readonly-cell" readonly placeholder="0.00"></td>
+                    <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-net readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-total readonly-cell" readonly placeholder="0"></td>
                     <td><button type="button" class="btn btn-add" onclick="addRow('parts')">+</button></td>
                 </tr>
                 
@@ -252,12 +262,12 @@
                     <td style="text-align: left;">GRAND TOTAL</td>
                     <td></td><td></td><td></td><td></td>
                     <td class="spacer"></td>
-                    <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-net readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0.00"></td>
-                    <td><input type="number" class="t-total readonly-cell" readonly placeholder="0.00"></td>
+                    <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-net readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0"></td>
+                    <td><input type="number" class="t-total readonly-cell" readonly placeholder="0"></td>
                     <td></td>
                 </tr>
             </tbody>
@@ -303,7 +313,6 @@
                         <td class="summary-label">TDS %</td>
                         <td>
                             <div class="tds-container">
-                                <!-- Note: TDS% is now readonly -->
                                 <input type="number" id="sumTdsPercent" class="readonly-cell summary-input" readonly placeholder="0" style="width: 40%;">
                                 <input type="number" id="sumTdsAmt" class="readonly-cell summary-input" readonly placeholder="0" style="width: 60%;">
                             </div>
@@ -318,11 +327,115 @@
                     <!-- Dynamically populated via JavaScript -->
                 </tbody>
             </table>
+
+            <!-- CLAIM PARTICULARS TABLE -->
+            <table id="claimParticularsTable">
+                <thead>
+                    <tr>
+                        <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold;">CLAIM PARTICULARS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">OFFICE CODE</td>
+                        <td><input type="text" style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">FILE NO</td>
+                        <td><input type="text" style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">PROCESSING DATE</td>
+                        <td><input type="date"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">VEHICLE NUMBER</td>
+                        <td><input type="text" style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">POLICY HOLDER</td>
+                        <td><input type="text" style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">POLICY NUMBER</td>
+                        <td><input type="text" style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">PERIOD</td>
+                        <td><input type="text" style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">DOA</td>
+                        <td><input type="date"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">CLAIM NUMBER</td>
+                        <td><input type="text" style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">CLAIM APPROVED FOR Rs.</td>
+                        <td><input type="number" placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">PAYMENT TO</td>
+                        <td>
+                            <select style="text-align: left;">
+                                <option value="insured">Insured</option>
+                                <option value="repairer">Repairer</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">SURVEY FEES APPROVED FOR Rs.</td>
+                        <td><input type="number" placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left; font-weight: bold;">64VB</td>
+                        <td><input type="text" style="text-align: left;"></td>
+                    </tr>
+                    <tr>
+                        <th style="background-color: #f2f2f2; text-align: center;">INVOICE BILLS - NUMBERS</th>
+                        <th style="background-color: #f2f2f2; text-align: center;">DATE</th>
+                    </tr>
+                    <tr>
+                        <td><input type="text" placeholder="Invoice No" style="text-align: left;"></td>
+                        <td><input type="date"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" placeholder="Invoice No" style="text-align: left;"></td>
+                        <td><input type="date"></td>
+                    </tr>
+                    <tr>
+                        <th style="background-color: #f2f2f2; text-align: center;">CWISS-INVOICE NUMBERS</th>
+                        <th style="background-color: #f2f2f2; text-align: center;">DATE</th>
+                    </tr>
+                    <tr>
+                        <td><input type="text" placeholder="CWISS No" style="text-align: left;"></td>
+                        <td><input type="date"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" placeholder="CWISS No" style="text-align: left;"></td>
+                        <td><input type="date"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: left; font-size: 11px; font-style: italic; background-color: #fdfdfd; line-height: 1.5;">
+                            Claim papers are in order. Section 64vb has been complied.<br>
+                            The claim is approved for Rs. <input type="number" style="width: 100px; display: inline-block;" placeholder="0">.<br>
+                            To be paid to the Insured / Repairer.<br>
+                            Survey / Inves / Legal Fee is approved for Rs. <input type="number" style="width: 100px; display: inline-block;" placeholder="0">.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="text-align: center; font-weight: bold; background-color: #f2f2f2; padding: 10px;">
+                            SANCTIONING OFFICER SIGNATURE, DATE & SEAL
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        // Bound listener to the outer container so all inputs trigger calculation
         document.getElementById('calculatorContainer').addEventListener('input', calculateAll);
         
         document.getElementById('calculatorContainer').addEventListener('change', function(e) {
@@ -344,7 +457,6 @@
             let labTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0, breakup: {} };
             let partTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0, breakup: {} };
             
-            // Collect individual items to calculate the advanced TDS Base later
             let allItems = [];
 
             // 1. Process Labour Rows
@@ -371,7 +483,7 @@
             };
             updateTotalRow('grandTotalRow', grandTotals);
 
-            // 4. Update Final Summary Section (Rounded to nearest Rupee)
+            // 4. Update Final Summary Section (Rounded to nearest Rupee - No decimals)
             let sumAmtBeforeGst = Math.round(grandTotals.net);
             let sumGst = Math.round(grandTotals.gst);
             let sumTotal = Math.round(grandTotals.total);
@@ -383,39 +495,28 @@
             let excess = Math.round(parseFloat(document.getElementById('sumExcess').value) || 0);
             let netAmount = Math.round(finalGrandTotal - salvage - excess);
 
-            // ----------------------------------------------------
-            // NEW TDS CALCULATION LOGIC
-            // ----------------------------------------------------
-            
-            // Find the total NET AMT of items that actually attract GST
+            // TDS Calculation Logic
             let totalGstNet = allItems.filter(i => i.gst > 0).reduce((sum, i) => sum + i.net, 0);
             let tdsBase = 0;
 
             allItems.forEach(item => {
                 if (item.gst > 0) {
                     if (totalGstNet > 0) {
-                        // Proportionately divide the EXCESS amount
                         let apportionedExcess = (item.net / totalGstNet) * excess;
-                        // Reduce the amount by the GST factor
                         let deflatedExcess = apportionedExcess / ((100 + item.gst) / 100);
-                        // Substract from the item's net amount
                         tdsBase += (item.net - deflatedExcess);
                     }
                 } else {
-                    // No GST applied, take it as it is
                     tdsBase += item.net;
                 }
             });
 
-            // Edge Case: If there are NO GST items but there is an Excess, we just deduct it from the base
             if (totalGstNet === 0 && excess > 0) {
                 tdsBase -= excess;
             }
 
-            // Ensure TDS base isn't negative
             tdsBase = Math.max(0, tdsBase);
 
-            // Determine the automated TDS % based on the 250,000 threshold
             let autoTdsPercent = 0;
             if (tdsBase > 250000) {
                 autoTdsPercent = 4;
@@ -426,17 +527,16 @@
             let tdsAmt = Math.round(tdsBase * (autoTdsPercent / 100));
 
             // Assigning purely rounded integers
-            document.getElementById('sumAmtBeforeGst').value = sumAmtBeforeGst;
-            document.getElementById('sumGst').value = sumGst;
-            document.getElementById('sumTotal').value = sumTotal;
-            document.getElementById('sumGrandTotal').value = finalGrandTotal;
-            document.getElementById('sumNetAmount').value = netAmount;
-            
-            // Auto Update TDS % and Amount
+            document.getElementById('sumAmtBeforeGst.value = sumAmtBeforeGst; // wait fix below
+            document.getElementById('sumAmtBeforeGst').value = Math.round(sumAmtBeforeGst);
+            document.getElementById('sumGst').value = Math.round(sumGst);
+            document.getElementById('sumTotal').value = Math.round(sumTotal);
+            document.getElementById('sumGrandTotal').value = Math.round(finalGrandTotal);
+            document.getElementById('sumNetAmount').value = Math.round(netAmount);
             document.getElementById('sumTdsPercent').value = autoTdsPercent;
-            document.getElementById('sumTdsAmt').value = tdsAmt;
+            document.getElementById('sumTdsAmt').value = Math.round(tdsAmt);
 
-            // 5. Render GST Breakup
+            // 5. Render GST Breakup (Rounded to nearest Rupee)
             renderGstBreakup(labTotals.breakup, partTotals.breakup);
         }
 
@@ -467,7 +567,6 @@
             let totalAmt = netAmt + gstAmt;
             row.querySelector('.total-amt').value = totalAmt.toFixed(2);
 
-            // Push this item to our tracker array for TDS Calculation later
             allItemsArray.push({ net: netAmt, gst: gstPercent });
 
             totalsObj.assessed += assessedCopy;
@@ -477,7 +576,6 @@
             totalsObj.gst += gstAmt;
             totalsObj.total += totalAmt;
 
-            // Collect data for GST Breakup
             if (!totalsObj.breakup[gstPercent]) {
                 totalsObj.breakup[gstPercent] = { net: 0, gst: 0, total: 0 };
             }
@@ -518,23 +616,27 @@
                     let data = dataObj[rate];
                     if (data.net === 0 && data.gst === 0 && data.total === 0) return;
 
+                    let roundedNet = Math.round(data.net);
+                    let roundedGst = Math.round(data.gst);
+                    let roundedTotal = Math.round(data.total);
+
                     if (rate === 0) {
                         html += `<tr>
                                     <td style="text-align: left; font-weight: bold;">${counter}. ${prefixLabel} - NO GST</td>
-                                    <td style="text-align: right;">${data.net.toFixed(2)}</td>
+                                    <td style="text-align: right;">${roundedNet}</td>
                                  </tr>`;
                     } else {
                         html += `<tr>
                                     <td style="text-align: left; font-weight: bold;">${counter}. ${prefixLabel}</td>
-                                    <td style="text-align: right;">${data.net.toFixed(2)}</td>
+                                    <td style="text-align: right;">${roundedNet}</td>
                                  </tr>
                                  <tr>
                                     <td style="text-align: left;">GST ${rate}%</td>
-                                    <td style="text-align: right;">${data.gst.toFixed(2)}</td>
+                                    <td style="text-align: right;">${roundedGst}</td>
                                  </tr>
                                  <tr>
                                     <td style="text-align: left;">TOTAL</td>
-                                    <td style="text-align: right;">${data.total.toFixed(2)}</td>
+                                    <td style="text-align: right;">${roundedTotal}</td>
                                  </tr>`;
                     }
                     html += `<tr><td colspan="2" style="height: 15px; border-left: none; border-right: none;"></td></tr>`;
@@ -548,7 +650,6 @@
             tbody.innerHTML = html;
         }
 
-        // Add / Remove Row Functions
         function addRow(type) {
             const tbodyId = type === 'labour' ? 'labourBody' : 'partsBody';
             const rowClass = type === 'labour' ? 'labour-row' : 'parts-row';
@@ -588,7 +689,7 @@
             newRow.innerHTML = `
                 <td class="sno"></td>
                 ${categoryHTML}
-                <td><input type="number" class="assessed-input" placeholder="0.00"></td>
+                <td><input type="number" class="assessed-input" placeholder="0"></td>
                 ${depHTML}
                 <td><input type="number" class="gst-input" value="18"></td>
                 <td>
@@ -598,18 +699,18 @@
                     </select>
                 </td>
                 <td class="spacer"></td>
-                <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0.00"></td>
-                <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0.00"></td>
+                <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0"></td>
+                <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0"></td>
+                <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0"></td>
+                <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0"></td>
+                <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0"></td>
+                <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0"></td>
                 <td><button type="button" class="btn btn-remove" onclick="removeRow(this, '${type}')">-</button></td>
             `;
             
             tbody.appendChild(newRow);
             updateSerialNumbers(type);
-            calculateAll(); // Recalculate totals
+            calculateAll();
         }
 
         function removeRow(button, type) {
@@ -619,7 +720,7 @@
             if (tbody.getElementsByTagName('tr').length > 1) {
                 button.closest('tr').remove();
                 updateSerialNumbers(type);
-                calculateAll(); // Recalculate totals
+                calculateAll();
             } else {
                 alert('You must have at least one row in this section.');
             }
@@ -633,7 +734,6 @@
             }
         }
 
-        // Initialize calculations on load
         window.onload = calculateAll;
     </script>
 </body>
