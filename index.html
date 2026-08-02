@@ -29,7 +29,7 @@
         .col-cat { width: 170px; }
         .col-amt { width: 95px; }
         .col-narrow { width: 75px; } 
-        .col-action { width: 40px; }
+        .col-action { width: 70px; } /* Widened for ROW -/+ */
         
         select, input {
             width: 100%;
@@ -153,7 +153,7 @@
                     <th class="col-amt">NET AMT</th>
                     <th class="col-narrow">GST AMT</th>
                     <th class="col-amt">TOTAL</th>
-                    <th class="col-action">Act</th>
+                    <th class="col-action">ROW -/+</th>
                 </tr>
             </thead>
             
@@ -318,6 +318,30 @@
                             </div>
                         </td>
                     </tr>
+                    
+                    <!-- Row Gap -->
+                    <tr><td colspan="2" style="border: none; height: 20px;"></td></tr>
+                    
+                    <!-- Non-Standard Percentage/Amount Section -->
+                    <tr>
+                        <td class="summary-label" style="text-align: center !important; font-weight: normal;">ENTER NON-STD</td>
+                        <td rowspan="2" style="vertical-align: middle;"><input type="number" id="nonStdPct" class="summary-input" placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label" style="text-align: center !important; font-weight: normal;">PERCENTAGE</td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label" style="text-align: center !important;">(or)</td>
+                        <td style="background-color: #fdfdfd;"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label" style="text-align: center !important; font-weight: normal;">ENTER THE</td>
+                        <td rowspan="5" style="vertical-align: middle;"><input type="number" id="nonStdAmt" class="summary-input" placeholder="0"></td>
+                    </tr>
+                    <tr><td class="summary-label" style="text-align: center !important; font-weight: normal;">GRAND TOTAL</td></tr>
+                    <tr><td class="summary-label" style="text-align: center !important; font-weight: normal;">AMOUNT YOU WISH</td></tr>
+                    <tr><td class="summary-label" style="text-align: center !important; font-weight: normal;">TO PAY BEFORE</td></tr>
+                    <tr><td class="summary-label" style="text-align: center !important; font-weight: normal;">SALVAGE AND EXCESS</td></tr>
                 </tbody>
             </table>
 
@@ -526,7 +550,7 @@
 
             let tdsAmt = Math.round(tdsBase * (autoTdsPercent / 100));
 
-            // Assigning purely rounded integers (Typo Fixed Here)
+            // Assigning purely rounded integers
             document.getElementById('sumAmtBeforeGst').value = Math.round(sumAmtBeforeGst);
             document.getElementById('sumGst').value = Math.round(sumGst);
             document.getElementById('sumTotal').value = Math.round(sumTotal);
