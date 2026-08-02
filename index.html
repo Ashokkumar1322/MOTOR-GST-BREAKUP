@@ -628,36 +628,37 @@
             return filename ? filename : "Claim_Calculation";
         }
 
-        // Export to PDF Logic - 100% FIXED FOR CLIPPING, LANDSCAPE, AND PAGE BREAKS
+        // Export to PDF Logic - 100% FIXED FOR CLIPPING AND PAGE BREAKS
         function exportToPdf() {
             window.scrollTo(0, 0); 
             
             const element = document.getElementById('calculatorContainer');
             
-            // Remove the body margin entirely for the 1 second it takes to capture the PDF.
-            // This stops html2canvas from "starting" its camera 20 pixels to the right
-            // and chopping off the left side columns.
+            // Remove margin momentarily and FORCE width so camera gets perfectly aligned
             const originalBodyMargin = document.body.style.margin;
+            const originalWidth = element.style.width;
+            
             document.body.style.margin = '0';
+            element.style.width = '1400px'; 
             
             const opt = {
-                margin:       10, // 10mm uniform margin all around the PDF
+                margin:       5, // Reduced to 5mm to give extra vertical space to fit the signature
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  { 
                     scale: 2, 
                     scrollX: 0, 
-                    scrollY: 0
+                    scrollY: 0,
+                    windowWidth: 1400 // Aligns perfectly with the forced element width
                 }, 
-                // Explicitly sets A4 layout to landscape mode
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
-                // Tells the engine to NEVER split a table row ('tr') between pages
-                pagebreak:    { mode: 'css', avoid: 'tr' }
+                pagebreak:    { mode: 'css', avoid: ['tr', '.bottom-sections'] }
             };
 
             html2pdf().set(opt).from(element).save().then(() => {
-                // Instantly put the webpage margin back to normal after the PDF downloads
+                // Restore styling immediately after generating
                 document.body.style.margin = originalBodyMargin;
+                element.style.width = originalWidth;
             });
         }
 
