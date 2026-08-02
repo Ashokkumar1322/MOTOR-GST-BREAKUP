@@ -639,24 +639,38 @@
             return filename ? filename : "Claim_Calculation";
         }
 
-        // Export to PDF Logic - FIXED FOR LEFT CLIPPING & LANDSCAPE
+        // Export to PDF Logic - FIXED FOR LEFT CLIPPING & PAGE BREAKS
         function exportToPdf() {
-            // Scroll to the absolute top-left of the window first.
-            // This prevents html2canvas from cutting off the left or top 
-            // if the user had scrolled down or to the right.
+            // Force scroll to absolute top-left so nothing gets clipped based on viewport scroll
             window.scrollTo(0, 0); 
             
             const element = document.getElementById('calculatorContainer');
+            
+            // Lock the container to a specific width so the PDF engine captures the EXACT bounds 
+            // without trying to guess or shrink based on the user's screen size.
+            const originalWidth = element.style.width;
+            element.style.width = '1450px'; 
+            
             const opt = {
-                margin:       0.2, 
+                margin:       [0.3, 0.2, 0.3, 0.2], // top, left, bottom, right margins
                 filename:     getExportFilename() + '.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                // Force scroll positions to 0 inside html2canvas as an extra safeguard
-                html2canvas:  { scale: 2, scrollX: 0, scrollY: 0 }, 
-                // Force A4 Landscape explicitly
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { 
+                    scale: 2, 
+                    scrollX: 0, 
+                    scrollY: 0,
+                    x: 0,
+                    y: 0,
+                    windowWidth: 1450 // Must perfectly match the locked element width
+                }, 
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' },
+                pagebreak:    { mode: ['css', 'legacy'], avoid: 'tr' } // Prevents table rows from breaking in half
             };
-            html2pdf().set(opt).from(element).save();
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Restore original styling after the PDF is generated
+                element.style.width = originalWidth;
+            });
         }
 
         // Export to Excel Logic
