@@ -607,7 +607,7 @@
 
                     <!-- Final Net Amount Section (Non-Std) -->
                     <tr>
-                        <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold; border-top: 2px solid #000; padding: 8px;">Final Net Amount To Be Paid</th>
+                        <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold; border-top: 2px solid #000; padding: 8px;">Final Net Amount To Be Paid (Non-Std)</th>
                     </tr>
                     <tr id="nsRowFinalToRepairer">
                         <td class="summary-label">To Repairer (Before TDS)</td>
@@ -868,6 +868,7 @@
             
             let stdFinalToInsuredTowing = (towingPayee === 'insured') ? towing : 0;
             let stdFinalToInsured = 0;
+            let stdFinalToRepairer = netAmount;
 
             if (mainPayee === 'repairer') {
                 // Show Repairer rows, Hide Insured row
@@ -880,6 +881,10 @@
                 document.getElementById('nsRowFinalTds').style.display = 'table-row';
                 document.getElementById('nsRowFinalToInsuredTowing').style.display = 'table-row';
                 document.getElementById('nsRowFinalToInsured').style.display = 'none';
+
+                if (towingPayee === 'insured') {
+                    stdFinalToRepairer -= towing;
+                }
             } else {
                 // Show Insured row, Hide Repairer rows
                 document.getElementById('rowFinalToRepairer').style.display = 'none';
@@ -896,7 +901,7 @@
             }
 
             // Populate the standard rows
-            document.getElementById('finalToRepairer').value = Math.round(netAmount); // Populated from NET AMOUNT per request
+            document.getElementById('finalToRepairer').value = Math.round(stdFinalToRepairer);
             document.getElementById('finalTds').value = Math.round(tdsAmt);
             document.getElementById('finalToInsuredTowing').value = Math.round(stdFinalToInsuredTowing);
             document.getElementById('finalToInsured').value = Math.round(stdFinalToInsured);
@@ -1013,13 +1018,18 @@
                 // --- FINAL NET AMOUNT TO BE PAID (NON-STANDARD CALC) ---
                 let nsFinalToInsuredTowing = (towingPayee === 'insured') ? Math.round(nsTowing) : 0;
                 let nsFinalToInsured = 0;
+                let nsFinalToRepairer = nsNetAmountVal;
 
-                if (mainPayee !== 'repairer') {
+                if (mainPayee === 'repairer') {
+                    if (towingPayee === 'insured') {
+                        nsFinalToRepairer -= Math.round(nsTowing);
+                    }
+                } else {
                     nsFinalToInsured = nsNetAmountVal - (towingPayee === 'repairer' ? Math.round(nsTowing) : 0);
                 }
 
                 // Populating the Non-Std rows
-                document.getElementById('nsFinalToRepairer').value = nsNetAmountVal; // Populated from NS NET AMOUNT
+                document.getElementById('nsFinalToRepairer').value = nsFinalToRepairer; 
                 document.getElementById('nsFinalTds').value = Math.round(nsTdsAmt);
                 document.getElementById('nsFinalToInsuredTowing').value = nsFinalToInsuredTowing;
                 document.getElementById('nsFinalToInsured').value = nsFinalToInsured;
