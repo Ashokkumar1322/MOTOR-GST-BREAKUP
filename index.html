@@ -49,10 +49,10 @@
 
         /* Adjusted Column Widths for PDF space saving */
         .col-sno { width: 30px; } 
-        .col-cat { width: 110px; } /* Further reduced width */
-        .col-amt { width: 60px; } /* Reduced width */
-        .col-narrow { width: 38px; } /* Further slimmed down for GST % and IMT 23 */
-        .col-action { width: 38px; } /* Slimmed down for ROW -/+ */
+        .col-cat { width: 110px; } 
+        .col-amt { width: 60px; } 
+        .col-narrow { width: 38px; } 
+        .col-action { width: 38px; } 
         
         select, input {
             width: 100%;
@@ -188,13 +188,30 @@
             padding: 6px !important;
         }
 
+        /* Highlight for Final Net Amount Headers */
+        .final-amount-header {
+            background-color: #004085 !important;
+            color: #ffffff !important;
+            font-family: 'Arial Black', Impact, sans-serif !important;
+            font-size: 15px !important;
+            text-transform: uppercase;
+            padding: 10px !important;
+            letter-spacing: 1px;
+            border: 2px solid #002752 !important;
+        }
+
         /* Hide specific elements ONLY during the PDF/Print export */
         @media print {
             .no-print {
                 display: none !important;
             }
             .highlight-select {
-                border: 1px solid #000 !important; /* Ensure borders are normal in print */
+                border: 1px solid #000 !important;
+            }
+            .final-amount-header {
+                background-color: #004085 !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
             }
         }
     </style>
@@ -430,7 +447,7 @@
 
                     <!-- Final Net Amount Section (Standard) -->
                     <tr>
-                        <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold; border-top: 2px solid #000; padding: 8px;">Final Net Amount To Be Paid</th>
+                        <th colspan="2" class="final-amount-header">Final Net Amount To Be Paid</th>
                     </tr>
                     <tr id="rowFinalToRepairer">
                         <td class="summary-label">To Repairer (Before TDS)</td>
@@ -626,7 +643,7 @@
 
                     <!-- Final Net Amount Section (Non-Std) -->
                     <tr>
-                        <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold; border-top: 2px solid #000; padding: 8px;">Final Net Amount To Be Paid (Non-Std)</th>
+                        <th colspan="2" class="final-amount-header">Final Net Amount To Be Paid (Non-Std)</th>
                     </tr>
                     <tr id="nsRowFinalToRepairer">
                         <td class="summary-label">To Repairer (Before TDS)</td>
@@ -730,17 +747,11 @@
             return filename ? filename : "Claim_Calculation";
         }
 
-        // Export to PDF Logic - FIXED WITH HARD WIDTH CAPTURE SO RIGHT EDGE NEVER MISSING
+        // Export to PDF Logic - UPGRADED TO A3 LANDSCAPE SO IT FITS NATIVELY WITHOUT WIDTH HACKS
         function exportToPdf() {
             window.scrollTo(0, 0); 
             
             const element = document.getElementById('calculatorContainer');
-            const originalBodyMargin = document.body.style.margin;
-            const originalWidth = element.style.width;
-            
-            // Momentarily remove margin and FORCE a specific width wrapper to ensure camera doesn't chop the table
-            document.body.style.margin = '0';
-            element.style.width = '1000px'; // Forced wide enough to perfectly fit the slimmed down table
             
             const opt = {
                 margin:       5, 
@@ -750,17 +761,15 @@
                     scale: 2, 
                     scrollX: 0, 
                     scrollY: 0,
-                    windowWidth: 1000 // Aligns with forced width, guaranteeing 100% of the right side is captured
+                    windowWidth: element.scrollWidth // captures natural width
                 }, 
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                // Changing to a3 orientation guarantees the massive table width fits completely.
+                // It will shrink automatically to fit whatever paper size the user selects when printing.
+                jsPDF:        { unit: 'mm', format: 'a3', orientation: 'landscape' },
                 pagebreak:    { mode: 'css', avoid: ['tr', '.bottom-sections'] }
             };
 
-            html2pdf().set(opt).from(element).save().then(() => {
-                // Restore styling immediately after generating
-                document.body.style.margin = originalBodyMargin;
-                element.style.width = originalWidth;
-            });
+            html2pdf().set(opt).from(element).save();
         }
 
         // Export to Excel Logic
