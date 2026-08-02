@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motor Insurance Claim Calculator</title>
+    
+    <!-- Required Libraries for PDF and Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -125,14 +130,48 @@
         }
         .btn-add { background-color: #4CAF50; color: white; border: 1px solid #3e8e41; }
         .btn-remove { background-color: #f44336; color: white; border: 1px solid #da190b; }
+        .btn-export { background-color: #007bff; color: white; border: 1px solid #0056b3; padding: 6px 12px; font-size: 14px; margin-right: 10px; border-radius: 4px; }
 
         .tds-container {
             display: flex; 
             gap: 5px;
         }
+        
+        .export-controls {
+            margin-bottom: 15px;
+        }
+
+        /* Print Specific CSS */
+        @media print {
+            @page {
+                size: landscape;
+                margin: 10mm;
+            }
+            .no-print {
+                display: none !important;
+            }
+            /* Guarantee bottom sections stay strictly horizontal on print/PDF */
+            .bottom-sections {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                gap: 10px !important;
+            }
+            .bottom-sections > table {
+                flex-shrink: 0; /* Prevent squishing */
+            }
+            body {
+                margin: 0;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <div class="export-controls no-print">
+        <button id="btnExportExcel" class="btn btn-export" onclick="exportToExcel()">Download as Excel</button>
+        <button id="btnExportPdf" class="btn btn-export" onclick="exportToPdf()">Download as PDF</button>
+    </div>
 
     <div id="calculatorContainer">
         <h2>Motor Insurance Claim Calculator</h2>
@@ -153,7 +192,7 @@
                     <th class="col-amt">NET AMT</th>
                     <th class="col-narrow">GST AMT</th>
                     <th class="col-amt">TOTAL</th>
-                    <th class="col-action">ROW -/+</th>
+                    <th class="col-action no-print">ROW -/+</th>
                 </tr>
             </thead>
             
@@ -183,7 +222,7 @@
                     <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0"></td>
-                    <td><button type="button" class="btn btn-remove" onclick="removeRow(this, 'labour')">-</button></td>
+                    <td class="no-print"><button type="button" class="btn btn-remove" onclick="removeRow(this, 'labour')">-</button></td>
                 </tr>
             </tbody>
             <tbody>
@@ -198,7 +237,7 @@
                     <td><input type="number" class="t-net readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-total readonly-cell" readonly placeholder="0"></td>
-                    <td><button type="button" class="btn btn-add" onclick="addRow('labour')">+</button></td>
+                    <td class="no-print"><button type="button" class="btn btn-add" onclick="addRow('labour')">+</button></td>
                 </tr>
             </tbody>
 
@@ -238,7 +277,7 @@
                     <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0"></td>
-                    <td><button type="button" class="btn btn-remove" onclick="removeRow(this, 'parts')">-</button></td>
+                    <td class="no-print"><button type="button" class="btn btn-remove" onclick="removeRow(this, 'parts')">-</button></td>
                 </tr>
             </tbody>
             <tbody>
@@ -253,7 +292,7 @@
                     <td><input type="number" class="t-net readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-total readonly-cell" readonly placeholder="0"></td>
-                    <td><button type="button" class="btn btn-add" onclick="addRow('parts')">+</button></td>
+                    <td class="no-print"><button type="button" class="btn btn-add" onclick="addRow('parts')">+</button></td>
                 </tr>
                 
                 <!-- GRAND TOTAL -->
@@ -268,7 +307,7 @@
                     <td><input type="number" class="t-net readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-gst readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-total readonly-cell" readonly placeholder="0"></td>
-                    <td></td>
+                    <td class="no-print"></td>
                 </tr>
             </tbody>
         </table>
@@ -324,7 +363,7 @@
                     
                     <!-- Non-Standard Percentage/Amount Section -->
                     <tr>
-                        <td colspan="2" style="text-align: center; padding: 10px; background-color: #f2f2f2;">
+                        <td colspan="2" style="text-align: center; padding: 10px; background-color: #f2f2f2;" class="no-print">
                             <label style="margin-right: 15px; font-weight: bold; cursor: pointer;">
                                 <input type="radio" name="nonStdToggle" value="pct" checked> Use Percentage
                             </label>
@@ -365,7 +404,7 @@
                     </tr>
                     <tr>
                         <td style="text-align: left; font-weight: bold;">FILE NO</td>
-                        <td><input type="text" style="text-align: left;"></td>
+                        <td><input type="text" id="fileNoInput" style="text-align: left;"></td>
                     </tr>
                     <tr>
                         <td style="text-align: left; font-weight: bold;">PROCESSING DATE</td>
@@ -373,7 +412,7 @@
                     </tr>
                     <tr>
                         <td style="text-align: left; font-weight: bold;">VEHICLE NUMBER</td>
-                        <td><input type="text" style="text-align: left;"></td>
+                        <td><input type="text" id="vehicleNoInput" style="text-align: left;"></td>
                     </tr>
                     <tr>
                         <td style="text-align: left; font-weight: bold;">POLICY HOLDER</td>
@@ -568,6 +607,73 @@
             }
         });
 
+        // Generate dynamic file name helper function
+        function getExportFilename() {
+            let fileNo = document.getElementById('fileNoInput').value.trim();
+            let vehicleNo = document.getElementById('vehicleNoInput').value.trim();
+            
+            let parts = [];
+            if(fileNo) parts.push(fileNo);
+            if(vehicleNo) parts.push(vehicleNo);
+            
+            let filename = parts.join('_').replace(/[^a-zA-Z0-9_-]/g, '');
+            return filename ? filename : "Claim_Calculation";
+        }
+
+        // Export to PDF Logic
+        function exportToPdf() {
+            const element = document.getElementById('calculatorContainer');
+            const opt = {
+                margin:       0.3,
+                filename:     getExportFilename() + '.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Export to Excel Logic
+        function exportToExcel() {
+            // Clone the container to manipulate it without affecting the live view
+            let clone = document.getElementById('calculatorContainer').cloneNode(true);
+            
+            // Replace all input and select elements with plain text versions so SheetJS can read them
+            let liveInputs = document.getElementById('calculatorContainer').querySelectorAll('input, select');
+            let cloneInputs = clone.querySelectorAll('input, select');
+            
+            for (let i = 0; i < liveInputs.length; i++) {
+                let val = liveInputs[i].value;
+                if (liveInputs[i].tagName === 'SELECT') {
+                    val = liveInputs[i].options[liveInputs[i].selectedIndex].text;
+                }
+                let textNode = document.createTextNode(val);
+                cloneInputs[i].parentNode.replaceChild(textNode, cloneInputs[i]);
+            }
+
+            let wb = XLSX.utils.book_new();
+            let ws_data = [];
+            
+            // Loop through all tables and append them to an Array of Arrays for a single sheet
+            clone.querySelectorAll('table').forEach(tbl => {
+                // Skip hidden tables (e.g., Non-Std if not active)
+                if (tbl.style.display === 'none') return; 
+                
+                let sheet = XLSX.utils.table_to_sheet(tbl);
+                let json = XLSX.utils.sheet_to_json(sheet, {header: 1});
+                
+                // Append rows to our master array
+                ws_data.push(...json);
+                ws_data.push([]); // blank spacer row between tables
+            });
+            
+            let ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, "Claim_Details");
+            
+            // Trigger download
+            XLSX.writeFile(wb, getExportFilename() + '.xlsx');
+        }
+
         function calculateAll() {
             let labTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0, breakup: {} };
             let partTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0, breakup: {} };
@@ -654,7 +760,7 @@
             renderGstBreakup(labTotals.breakup, partTotals.breakup);
 
             // =====================================================================
-            // NEW: NON-STANDARD REVERSE CALCULATION LOGIC
+            // NON-STANDARD REVERSE CALCULATION LOGIC
             // =====================================================================
             const nonStdPctInput = document.getElementById('nonStdPct');
             const nonStdAmtInput = document.getElementById('nonStdAmt');
@@ -662,7 +768,7 @@
             
             let targetTotal = 0;
             let isNonStdActive = false;
-            let exactOriginalTotal = grandTotals.total; // Use exact unrounded total for precise scaling
+            let exactOriginalTotal = grandTotals.total; 
             
             if (isPctMode && parseFloat(nonStdPctInput.value) > 0) {
                 targetTotal = exactOriginalTotal * (parseFloat(nonStdPctInput.value) / 100);
@@ -718,7 +824,7 @@
                 allNsItems.forEach(item => {
                     if (item.gst > 0) {
                         if (nsTotalGstNet > 0) {
-                            let apportionedExcess = (item.net / nsTotalGstNet) * excess; // applying the same excess
+                            let apportionedExcess = (item.net / nsTotalGstNet) * excess; 
                             let deflatedExcess = apportionedExcess / ((100 + item.gst) / 100);
                             nsTdsBase += (item.net - deflatedExcess);
                         }
@@ -871,7 +977,6 @@
             tbody.innerHTML = html;
         }
 
-        // NEW: Separate renderer for the Non-Standard Breakup to keep existing code pure
         function renderNsGstBreakup(labourBreakup, partsBreakup) {
             const tbody = document.getElementById('nsGstBreakupBody');
             let html = '';
@@ -983,7 +1088,7 @@
                 <td><input type="number" class="net-amt readonly-cell" readonly placeholder="0"></td>
                 <td><input type="number" class="gst-amt readonly-cell" readonly placeholder="0"></td>
                 <td><input type="number" class="total-amt readonly-cell" readonly placeholder="0"></td>
-                <td><button type="button" class="btn btn-remove" onclick="removeRow(this, '${type}')">-</button></td>
+                <td class="no-print"><button type="button" class="btn btn-remove" onclick="removeRow(this, '${type}')">-</button></td>
             `;
             
             tbody.appendChild(newRow);
