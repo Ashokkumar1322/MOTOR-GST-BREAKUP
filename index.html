@@ -49,7 +49,7 @@
 
         /* Adjusted Column Widths for PDF space saving */
         .col-sno { width: 35px; }
-        .col-cat { width: 170px; }
+        .col-cat { width: 140px; } /* Reduced width */
         .col-amt { width: 70px; } 
         .col-narrow { width: 45px; } /* Slimmed down for GST % and IMT 23 */
         .col-action { width: 45px; } /* Slimmed down for ROW -/+ */
@@ -406,24 +406,26 @@
                         <td><input type="number" id="nonStdAmt" class="summary-input readonly-cell" placeholder="0" disabled></td>
                     </tr>
 
+                    <!-- Gap before Final Net Amount -->
+                    <tr><td colspan="2" style="border: none; height: 15px;"></td></tr>
+
                     <!-- Final Net Amount Section (Standard) -->
                     <tr>
                         <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold; border-top: 2px solid #000; padding: 8px;">Final Net Amount To Be Paid</th>
                     </tr>
-                    <tr>
+                    <tr id="rowFinalToRepairer">
                         <td class="summary-label">To Repairer (Before TDS)</td>
                         <td><input type="number" id="finalToRepairer" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
-                    <tr>
+                    <tr id="rowFinalTds">
                         <td class="summary-label">TDS</td>
                         <td><input type="number" id="finalTds" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
-                    <tr>
+                    <tr id="rowFinalToInsuredTowing">
                         <td class="summary-label">To Insured (Towing)</td>
                         <td><input type="number" id="finalToInsuredTowing" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
-                    <tr><td colspan="2" style="border: none; height: 10px;"></td></tr>
-                    <tr>
+                    <tr id="rowFinalToInsured" style="display: none;">
                         <td class="summary-label">To Insured</td>
                         <td><input type="number" id="finalToInsured" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
@@ -489,8 +491,8 @@
                         <td style="text-align: left; font-weight: bold;">PAYMENT TO</td>
                         <td>
                             <select id="mainPaymentTo" style="text-align: left;">
+                                <option value="repairer" selected>Repairer</option>
                                 <option value="insured">Insured</option>
-                                <option value="repairer">Repairer</option>
                             </select>
                         </td>
                     </tr>
@@ -600,24 +602,26 @@
                         </td>
                     </tr>
                     
+                    <!-- Gap before Final Net Amount -->
+                    <tr><td colspan="2" style="border: none; height: 15px;"></td></tr>
+
                     <!-- Final Net Amount Section (Non-Std) -->
                     <tr>
                         <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold; border-top: 2px solid #000; padding: 8px;">Final Net Amount To Be Paid</th>
                     </tr>
-                    <tr>
+                    <tr id="nsRowFinalToRepairer">
                         <td class="summary-label">To Repairer (Before TDS)</td>
                         <td><input type="number" id="nsFinalToRepairer" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
-                    <tr>
+                    <tr id="nsRowFinalTds">
                         <td class="summary-label">TDS</td>
                         <td><input type="number" id="nsFinalTds" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
-                    <tr>
+                    <tr id="nsRowFinalToInsuredTowing">
                         <td class="summary-label">To Insured (Towing)</td>
                         <td><input type="number" id="nsFinalToInsuredTowing" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
-                    <tr><td colspan="2" style="border: none; height: 10px;"></td></tr>
-                    <tr>
+                    <tr id="nsRowFinalToInsured" style="display: none;">
                         <td class="summary-label">To Insured</td>
                         <td><input type="number" id="nsFinalToInsured" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
@@ -686,6 +690,11 @@
             // Sync Towing Dropdowns
             if (e.target.id === 'towingPayee') {
                 document.getElementById('nsTowingPayee').value = e.target.value;
+            }
+
+            // Recalculate on Main Payment To toggle
+            if (e.target.id === 'mainPaymentTo') {
+                calculateAll();
             }
         });
 
@@ -860,16 +869,37 @@
             let stdFinalToInsuredTowing = (towingPayee === 'insured') ? towing : 0;
             let stdFinalToInsured = 0;
 
-            if (mainPayee !== 'repairer') {
+            if (mainPayee === 'repairer') {
+                // Show Repairer rows, Hide Insured row
+                document.getElementById('rowFinalToRepairer').style.display = 'table-row';
+                document.getElementById('rowFinalTds').style.display = 'table-row';
+                document.getElementById('rowFinalToInsuredTowing').style.display = 'table-row';
+                document.getElementById('rowFinalToInsured').style.display = 'none';
+                
+                document.getElementById('nsRowFinalToRepairer').style.display = 'table-row';
+                document.getElementById('nsRowFinalTds').style.display = 'table-row';
+                document.getElementById('nsRowFinalToInsuredTowing').style.display = 'table-row';
+                document.getElementById('nsRowFinalToInsured').style.display = 'none';
+            } else {
+                // Show Insured row, Hide Repairer rows
+                document.getElementById('rowFinalToRepairer').style.display = 'none';
+                document.getElementById('rowFinalTds').style.display = 'none';
+                document.getElementById('rowFinalToInsuredTowing').style.display = 'none';
+                document.getElementById('rowFinalToInsured').style.display = 'table-row';
+                
+                document.getElementById('nsRowFinalToRepairer').style.display = 'none';
+                document.getElementById('nsRowFinalTds').style.display = 'none';
+                document.getElementById('nsRowFinalToInsuredTowing').style.display = 'none';
+                document.getElementById('nsRowFinalToInsured').style.display = 'table-row';
+                
                 stdFinalToInsured = netAmount - (towingPayee === 'repairer' ? towing : 0);
             }
 
-            // As requested: "To Repairer (Before TDS)" gets the amount from 'NET AMOUNT'
-            document.getElementById('finalToRepairer').value = Math.round(netAmount);
+            // Populate the standard rows
+            document.getElementById('finalToRepairer').value = Math.round(netAmount); // Populated from NET AMOUNT per request
             document.getElementById('finalTds').value = Math.round(tdsAmt);
             document.getElementById('finalToInsuredTowing').value = Math.round(stdFinalToInsuredTowing);
             document.getElementById('finalToInsured').value = Math.round(stdFinalToInsured);
-
 
             // 5. Render GST Breakup
             renderGstBreakup(labTotals.breakup, partTotals.breakup);
@@ -988,8 +1018,8 @@
                     nsFinalToInsured = nsNetAmountVal - (towingPayee === 'repairer' ? Math.round(nsTowing) : 0);
                 }
 
-                // As requested: "To Repairer (Before TDS)" gets the amount from 'NET AMOUNT'
-                document.getElementById('nsFinalToRepairer').value = nsNetAmountVal;
+                // Populating the Non-Std rows
+                document.getElementById('nsFinalToRepairer').value = nsNetAmountVal; // Populated from NS NET AMOUNT
                 document.getElementById('nsFinalTds').value = Math.round(nsTdsAmt);
                 document.getElementById('nsFinalToInsuredTowing').value = nsFinalToInsuredTowing;
                 document.getElementById('nsFinalToInsured').value = nsFinalToInsured;
