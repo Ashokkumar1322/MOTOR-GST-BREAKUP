@@ -324,24 +324,23 @@
                     
                     <!-- Non-Standard Percentage/Amount Section -->
                     <tr>
-                        <td class="summary-label" style="text-align: center !important; font-weight: normal;">ENTER NON-STD</td>
-                        <td rowspan="2" style="vertical-align: middle;"><input type="number" id="nonStdPct" class="summary-input" placeholder="0"></td>
+                        <td colspan="2" style="text-align: center; padding: 10px; background-color: #f2f2f2;">
+                            <label style="margin-right: 15px; font-weight: bold; cursor: pointer;">
+                                <input type="radio" name="nonStdToggle" value="pct" checked> Use Percentage
+                            </label>
+                            <label style="font-weight: bold; cursor: pointer;">
+                                <input type="radio" name="nonStdToggle" value="amt"> Use Quantum (Amount)
+                            </label>
+                        </td>
                     </tr>
                     <tr>
-                        <td class="summary-label" style="text-align: center !important; font-weight: normal;">PERCENTAGE</td>
+                        <td class="summary-label" style="font-weight: normal; line-height: 1.4;">Enter Non-Standard Percentage</td>
+                        <td><input type="number" id="nonStdPct" class="summary-input" placeholder="0"></td>
                     </tr>
                     <tr>
-                        <td class="summary-label" style="text-align: center !important;">(or)</td>
-                        <td style="background-color: #fdfdfd;"></td>
+                        <td class="summary-label" style="font-weight: normal; line-height: 1.4;">Enter Grand Total Amount Before Deduction Of Salvage & Excess</td>
+                        <td><input type="number" id="nonStdAmt" class="summary-input readonly-cell" placeholder="0" disabled></td>
                     </tr>
-                    <tr>
-                        <td class="summary-label" style="text-align: center !important; font-weight: normal;">ENTER THE</td>
-                        <td rowspan="5" style="vertical-align: middle;"><input type="number" id="nonStdAmt" class="summary-input" placeholder="0"></td>
-                    </tr>
-                    <tr><td class="summary-label" style="text-align: center !important; font-weight: normal;">GRAND TOTAL</td></tr>
-                    <tr><td class="summary-label" style="text-align: center !important; font-weight: normal;">AMOUNT YOU WISH</td></tr>
-                    <tr><td class="summary-label" style="text-align: center !important; font-weight: normal;">TO PAY BEFORE</td></tr>
-                    <tr><td class="summary-label" style="text-align: center !important; font-weight: normal;">SALVAGE AND EXCESS</td></tr>
                 </tbody>
             </table>
 
@@ -460,6 +459,33 @@
     </div>
 
     <script>
+        // Toggle for Non-Standard Percentage vs Quantum
+        document.getElementById('calculatorContainer').addEventListener('change', function(e) {
+            if (e.target.name === 'nonStdToggle') {
+                const pctInput = document.getElementById('nonStdPct');
+                const amtInput = document.getElementById('nonStdAmt');
+                
+                if (e.target.value === 'pct') {
+                    // Enable Percentage, Disable Amount
+                    pctInput.disabled = false;
+                    pctInput.classList.remove('readonly-cell');
+                    
+                    amtInput.disabled = true;
+                    amtInput.value = '';
+                    amtInput.classList.add('readonly-cell');
+                } else {
+                    // Enable Amount, Disable Percentage
+                    amtInput.disabled = false;
+                    amtInput.classList.remove('readonly-cell');
+                    
+                    pctInput.disabled = true;
+                    pctInput.value = '';
+                    pctInput.classList.add('readonly-cell');
+                }
+                calculateAll();
+            }
+        });
+
         document.getElementById('calculatorContainer').addEventListener('input', calculateAll);
         
         document.getElementById('calculatorContainer').addEventListener('change', function(e) {
