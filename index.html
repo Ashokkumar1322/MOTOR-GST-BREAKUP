@@ -351,8 +351,8 @@
                             <div style="display: flex; gap: 5px;">
                                 <input type="number" id="sumTowing" class="summary-input" placeholder="0" style="width: 50%;">
                                 <select id="towingPayee" style="width: 50%; font-size: 11px;">
-                                    <option value="insured">Pay to Insured</option>
-                                    <option value="repairer">Pay to Repairer</option>
+                                    <option value="insured">To Insured</option>
+                                    <option value="repairer">To Repairer</option>
                                 </select>
                             </div>
                         </td>
@@ -404,6 +404,28 @@
                     <tr>
                         <td class="summary-label" style="font-weight: normal; line-height: 1.4;">Enter Grand Total Amount Before Deduction Of Salvage & Excess</td>
                         <td><input type="number" id="nonStdAmt" class="summary-input readonly-cell" placeholder="0" disabled></td>
+                    </tr>
+
+                    <!-- Final Net Amount Section (Standard) -->
+                    <tr>
+                        <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold; border-top: 2px solid #000; padding: 8px;">Final Net Amount To Be Paid</th>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">To Repairer</td>
+                        <td><input type="number" id="finalToRepairer" class="summary-input" placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">TDS</td>
+                        <td><input type="number" id="finalTds" class="summary-input" placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">To Insured (Towing)</td>
+                        <td><input type="number" id="finalToInsuredTowing" class="summary-input" placeholder="0"></td>
+                    </tr>
+                    <tr><td colspan="2" style="border: none; height: 10px;"></td></tr>
+                    <tr>
+                        <td class="summary-label">To Insured</td>
+                        <td><input type="number" id="finalToInsured" class="summary-input" placeholder="0"></td>
                     </tr>
                 </tbody>
             </table>
@@ -466,7 +488,7 @@
                     <tr>
                         <td style="text-align: left; font-weight: bold;">PAYMENT TO</td>
                         <td>
-                            <select style="text-align: left;">
+                            <select id="mainPaymentTo" style="text-align: left;">
                                 <option value="insured">Insured</option>
                                 <option value="repairer">Repairer</option>
                             </select>
@@ -546,8 +568,8 @@
                             <div style="display: flex; gap: 5px;">
                                 <input type="number" id="nsTowing" class="readonly-cell summary-input" readonly placeholder="0" style="width: 50%;">
                                 <select id="nsTowingPayee" class="readonly-cell" disabled style="width: 50%; font-size: 11px; color: #333; background-color: #e9ecef;">
-                                    <option value="insured">Pay to Insured</option>
-                                    <option value="repairer">Pay to Repairer</option>
+                                    <option value="insured">To Insured</option>
+                                    <option value="repairer">To Repairer</option>
                                 </select>
                             </div>
                         </td>
@@ -576,6 +598,28 @@
                                 <input type="number" id="nsTdsAmt" class="readonly-cell summary-input" readonly placeholder="0" style="width: 60%;">
                             </div>
                         </td>
+                    </tr>
+                    
+                    <!-- Final Net Amount Section (Non-Std) -->
+                    <tr>
+                        <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold; border-top: 2px solid #000; padding: 8px;">Final Net Amount To Be Paid</th>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">To Repairer</td>
+                        <td><input type="number" id="nsFinalToRepairer" class="summary-input" placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">TDS</td>
+                        <td><input type="number" id="nsFinalTds" class="summary-input" placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">To Insured (Towing)</td>
+                        <td><input type="number" id="nsFinalToInsuredTowing" class="summary-input" placeholder="0"></td>
+                    </tr>
+                    <tr><td colspan="2" style="border: none; height: 10px;"></td></tr>
+                    <tr>
+                        <td class="summary-label">To Insured</td>
+                        <td><input type="number" id="nsFinalToInsured" class="summary-input" placeholder="0"></td>
                     </tr>
                 </tbody>
             </table>
@@ -809,6 +853,27 @@
             // Sync Non-Standard dropdown just in case
             document.getElementById('nsTowingPayee').value = document.getElementById('towingPayee').value;
 
+            // --- FINAL NET AMOUNT TO BE PAID (STANDARD CALC) ---
+            let mainPayee = document.getElementById('mainPaymentTo').value;
+            let towingPayee = document.getElementById('towingPayee').value;
+            
+            let stdFinalToInsuredTowing = (towingPayee === 'insured') ? towing : 0;
+            let stdFinalToRepairer = 0;
+            let stdFinalToInsured = 0;
+
+            if (mainPayee === 'repairer') {
+                stdFinalToRepairer = netAmount - stdFinalToInsuredTowing - tdsAmt;
+            } else {
+                stdFinalToInsured = netAmount - (towingPayee === 'repairer' ? towing : 0);
+                if (towingPayee === 'repairer') stdFinalToRepairer = towing;
+            }
+
+            document.getElementById('finalToRepairer').value = Math.round(stdFinalToRepairer);
+            document.getElementById('finalTds').value = Math.round(tdsAmt);
+            document.getElementById('finalToInsuredTowing').value = Math.round(stdFinalToInsuredTowing);
+            document.getElementById('finalToInsured').value = Math.round(stdFinalToInsured);
+
+
             // 5. Render GST Breakup
             renderGstBreakup(labTotals.breakup, partTotals.breakup);
 
@@ -901,6 +966,7 @@
                     nsAutoTdsPercent = 2;
                 }
                 let nsTdsAmt = Math.round(nsTdsBase * (nsAutoTdsPercent / 100));
+                let nsNetAmountVal = Math.round(nsTotalAmt + nsTowing - salvage - excess);
 
                 // Populate Non-Standard Summary Board
                 document.getElementById('nsAmtBeforeGst').value = Math.round(nsAmtBeforeGst);
@@ -913,10 +979,27 @@
                 
                 document.getElementById('nsSalvage').value = salvage;
                 document.getElementById('nsExcess').value = excess;
-                document.getElementById('nsNetAmount').value = Math.round(nsTotalAmt + nsTowing - salvage - excess);
+                document.getElementById('nsNetAmount').value = nsNetAmountVal;
                 document.getElementById('nsTdsPercent').value = nsAutoTdsPercent;
                 document.getElementById('nsTdsAmt').value = Math.round(nsTdsAmt);
                 
+                // --- FINAL NET AMOUNT TO BE PAID (NON-STANDARD CALC) ---
+                let nsFinalToInsuredTowing = (towingPayee === 'insured') ? Math.round(nsTowing) : 0;
+                let nsFinalToRepairer = 0;
+                let nsFinalToInsured = 0;
+
+                if (mainPayee === 'repairer') {
+                    nsFinalToRepairer = nsNetAmountVal - nsFinalToInsuredTowing - Math.round(nsTdsAmt);
+                } else {
+                    nsFinalToInsured = nsNetAmountVal - (towingPayee === 'repairer' ? Math.round(nsTowing) : 0);
+                    if (towingPayee === 'repairer') nsFinalToRepairer = Math.round(nsTowing);
+                }
+
+                document.getElementById('nsFinalToRepairer').value = nsFinalToRepairer;
+                document.getElementById('nsFinalTds').value = Math.round(nsTdsAmt);
+                document.getElementById('nsFinalToInsuredTowing').value = nsFinalToInsuredTowing;
+                document.getElementById('nsFinalToInsured').value = nsFinalToInsured;
+
                 // Render Non-Standard GST Breakup
                 renderNsGstBreakup(nsLabBreakup, nsPartBreakup);
                 
