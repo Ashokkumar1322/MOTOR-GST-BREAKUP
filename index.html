@@ -303,7 +303,8 @@
                         <td class="summary-label">TDS %</td>
                         <td>
                             <div class="tds-container">
-                                <input type="number" id="sumTdsPercent" class="summary-input" placeholder="0" step="0.1" style="width: 40%;">
+                                <!-- Note: TDS% is now readonly -->
+                                <input type="number" id="sumTdsPercent" class="readonly-cell summary-input" readonly placeholder="0" style="width: 40%;">
                                 <input type="number" id="sumTdsAmt" class="readonly-cell summary-input" readonly placeholder="0" style="width: 60%;">
                             </div>
                         </td>
@@ -342,15 +343,18 @@
         function calculateAll() {
             let labTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0, breakup: {} };
             let partTotals = { assessed: 0, dep: 0, imt23: 0, net: 0, gst: 0, total: 0, breakup: {} };
+            
+            // Collect individual items to calculate the advanced TDS Base later
+            let allItems = [];
 
             // 1. Process Labour Rows
             document.querySelectorAll('.labour-row').forEach(row => {
-                processRow(row, labTotals);
+                processRow(row, labTotals, allItems);
             });
 
             // 2. Process Parts Rows
             document.querySelectorAll('.parts-row').forEach(row => {
-                processRow(row, partTotals);
+                processRow(row, partTotals, allItems);
             });
 
             // 3. Update Totals
@@ -379,8 +383,47 @@
             let excess = Math.round(parseFloat(document.getElementById('sumExcess').value) || 0);
             let netAmount = Math.round(finalGrandTotal - salvage - excess);
 
-            let tdsPercent = parseFloat(document.getElementById('sumTdsPercent').value) || 0;
-            let tdsAmt = Math.round(netAmount * (tdsPercent / 100));
+            // ----------------------------------------------------
+            // NEW TDS CALCULATION LOGIC
+            // ----------------------------------------------------
+            
+            // Find the total NET AMT of items that actually attract GST
+            let totalGstNet = allItems.filter(i => i.gst > 0).reduce((sum, i) => sum + i.net, 0);
+            let tdsBase = 0;
+
+            allItems.forEach(item => {
+                if (item.gst > 0) {
+                    if (totalGstNet > 0) {
+                        // Proportionately divide the EXCESS amount
+                        let apportionedExcess = (item.net / totalGstNet) * excess;
+                        // Reduce the amount by the GST factor
+                        let deflatedExcess = apportionedExcess / ((100 + item.gst) / 100);
+                        // Substract from the item's net amount
+                        tdsBase += (item.net - deflatedExcess);
+                    }
+                } else {
+                    // No GST applied, take it as it is
+                    tdsBase += item.net;
+                }
+            });
+
+            // Edge Case: If there are NO GST items but there is an Excess, we just deduct it from the base
+            if (totalGstNet === 0 && excess > 0) {
+                tdsBase -= excess;
+            }
+
+            // Ensure TDS base isn't negative
+            tdsBase = Math.max(0, tdsBase);
+
+            // Determine the automated TDS % based on the 250,000 threshold
+            let autoTdsPercent = 0;
+            if (tdsBase > 250000) {
+                autoTdsPercent = 4;
+            } else if (tdsBase > 0) {
+                autoTdsPercent = 2;
+            }
+
+            let tdsAmt = Math.round(tdsBase * (autoTdsPercent / 100));
 
             // Assigning purely rounded integers
             document.getElementById('sumAmtBeforeGst').value = sumAmtBeforeGst;
@@ -388,13 +431,16 @@
             document.getElementById('sumTotal').value = sumTotal;
             document.getElementById('sumGrandTotal').value = finalGrandTotal;
             document.getElementById('sumNetAmount').value = netAmount;
+            
+            // Auto Update TDS % and Amount
+            document.getElementById('sumTdsPercent').value = autoTdsPercent;
             document.getElementById('sumTdsAmt').value = tdsAmt;
 
             // 5. Render GST Breakup
             renderGstBreakup(labTotals.breakup, partTotals.breakup);
         }
 
-        function processRow(row, totalsObj) {
+        function processRow(row, totalsObj, allItemsArray) {
             let assessedInput = parseFloat(row.querySelector('.assessed-input').value) || 0;
             let depPercent = parseFloat(row.querySelector('.dep-input').value) || 0;
             let gstPercent = parseFloat(row.querySelector('.gst-input').value) || 0;
@@ -420,6 +466,9 @@
 
             let totalAmt = netAmt + gstAmt;
             row.querySelector('.total-amt').value = totalAmt.toFixed(2);
+
+            // Push this item to our tracker array for TDS Calculation later
+            allItemsArray.push({ net: netAmt, gst: gstPercent });
 
             totalsObj.assessed += assessedCopy;
             totalsObj.dep += depAmt;
