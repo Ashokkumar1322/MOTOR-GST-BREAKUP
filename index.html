@@ -125,12 +125,25 @@
 
         .btn {
             cursor: pointer;
-            padding: 2px 6px;
+            padding: 4px 8px;
             font-weight: bold;
         }
         .btn-add { background-color: #4CAF50; color: white; border: 1px solid #3e8e41; }
         .btn-remove { background-color: #f44336; color: white; border: 1px solid #da190b; }
-        .btn-export { background-color: #007bff; color: white; border: 1px solid #0056b3; padding: 6px 12px; font-size: 14px; margin-right: 10px; border-radius: 4px; }
+        
+        .btn-export { 
+            background-color: #007bff; 
+            color: white; 
+            border: 1px solid #0056b3; 
+            padding: 8px 16px; 
+            font-size: 14px; 
+            margin-right: 10px; 
+            border-radius: 4px; 
+            cursor: pointer;
+        }
+        .btn-export:hover {
+            background-color: #0056b3;
+        }
 
         .tds-container {
             display: flex; 
@@ -138,7 +151,12 @@
         }
         
         .export-controls {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: inline-block;
         }
 
         /* Print Specific CSS */
@@ -168,13 +186,14 @@
 </head>
 <body>
 
-    <div class="export-controls no-print">
-        <button id="btnExportExcel" class="btn btn-export" onclick="exportToExcel()">Download as Excel</button>
-        <button id="btnExportPdf" class="btn btn-export" onclick="exportToPdf()">Download as PDF</button>
-    </div>
-
     <div id="calculatorContainer">
         <h2>Motor Insurance Claim Calculator</h2>
+        
+        <!-- EXPORT BUTTONS ARE HERE NOW -->
+        <div class="export-controls no-print">
+            <button id="btnExportExcel" class="btn btn-export" onclick="exportToExcel()">📊 Download as Excel</button>
+            <button id="btnExportPdf" class="btn btn-export" onclick="exportToPdf()">📄 Download as PDF</button>
+        </div>
 
         <table id="claimTable">
             <thead>
