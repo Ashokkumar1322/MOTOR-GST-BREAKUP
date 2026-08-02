@@ -29,6 +29,12 @@
             background-color: #f2f2f2;
             font-size: 12px;
         }
+        
+        /* Prevent PDF page breaks in the middle of rows or bottom sections */
+        tr, .bottom-sections {
+            page-break-inside: avoid !important;
+        }
+
         /* Adjusted Column Widths */
         .col-sno { width: 40px; }
         .col-cat { width: 170px; }
@@ -159,27 +165,10 @@
             display: inline-block;
         }
 
-        /* Print Specific CSS */
+        /* Hide specific elements ONLY during the PDF/Print export */
         @media print {
-            @page {
-                size: A4 landscape;
-                margin: 5mm;
-            }
             .no-print {
                 display: none !important;
-            }
-            /* Guarantee bottom sections stay strictly horizontal on print/PDF */
-            .bottom-sections {
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: nowrap !important;
-                gap: 10px !important;
-            }
-            .bottom-sections > table {
-                flex-shrink: 0; /* Prevent squishing */
-            }
-            body {
-                margin: 0;
             }
         }
     </style>
@@ -639,18 +628,20 @@
             return filename ? filename : "Claim_Calculation";
         }
 
-        // Export to PDF Logic - REMOVED OFFSETS AND LOCKED WIDTH SAFELY
+        // Export to PDF Logic - 100% FIXED FOR CLIPPING, LANDSCAPE, AND PAGE BREAKS
         function exportToPdf() {
             window.scrollTo(0, 0); 
             
             const element = document.getElementById('calculatorContainer');
-            const originalMinWidth = element.style.minWidth;
             
-            // Ensures the table stays strictly wide and doesn't wrap/squish during capture
-            element.style.minWidth = '1300px'; 
+            // Remove the body margin entirely for the 1 second it takes to capture the PDF.
+            // This stops html2canvas from "starting" its camera 20 pixels to the right
+            // and chopping off the left side columns.
+            const originalBodyMargin = document.body.style.margin;
+            document.body.style.margin = '0';
             
             const opt = {
-                margin:       [0.3, 0.3, 0.3, 0.3], 
+                margin:       10, // 10mm uniform margin all around the PDF
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  { 
@@ -658,22 +649,21 @@
                     scrollX: 0, 
                     scrollY: 0
                 }, 
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' },
-                pagebreak:    { mode: ['css', 'legacy'], avoid: 'tr' } 
+                // Explicitly sets A4 layout to landscape mode
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                // Tells the engine to NEVER split a table row ('tr') between pages
+                pagebreak:    { mode: 'css', avoid: 'tr' }
             };
 
             html2pdf().set(opt).from(element).save().then(() => {
-                // Restore styling immediately after generating
-                element.style.minWidth = originalMinWidth;
+                // Instantly put the webpage margin back to normal after the PDF downloads
+                document.body.style.margin = originalBodyMargin;
             });
         }
 
         // Export to Excel Logic
         function exportToExcel() {
-            // Clone the container to manipulate it without affecting the live view
             let clone = document.getElementById('calculatorContainer').cloneNode(true);
-            
-            // Replace all input and select elements with plain text versions so SheetJS can read them
             let liveInputs = document.getElementById('calculatorContainer').querySelectorAll('input, select');
             let cloneInputs = clone.querySelectorAll('input, select');
             
@@ -689,23 +679,16 @@
             let wb = XLSX.utils.book_new();
             let ws_data = [];
             
-            // Loop through all tables and append them to an Array of Arrays for a single sheet
             clone.querySelectorAll('table').forEach(tbl => {
-                // Skip hidden tables (e.g., Non-Std if not active)
                 if (tbl.style.display === 'none') return; 
-                
                 let sheet = XLSX.utils.table_to_sheet(tbl);
                 let json = XLSX.utils.sheet_to_json(sheet, {header: 1});
-                
-                // Append rows to our master array
                 ws_data.push(...json);
-                ws_data.push([]); // blank spacer row between tables
+                ws_data.push([]); 
             });
             
             let ws = XLSX.utils.aoa_to_sheet(ws_data);
             XLSX.utils.book_append_sheet(wb, ws, "Claim_Details");
-            
-            // Trigger download
             XLSX.writeFile(wb, getExportFilename() + '.xlsx');
         }
 
