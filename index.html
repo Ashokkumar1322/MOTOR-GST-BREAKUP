@@ -455,6 +455,71 @@
                     </tr>
                 </tbody>
             </table>
+
+            <!-- NEW: NON-STD FINAL WORKING (Initially hidden) -->
+            <table id="nonStdSummaryTable" style="display: none; width: 320px; margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold;">Non-Std Final Working</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="summary-label">AMOUNT BEFORE GST</td>
+                        <td><input type="number" id="nsAmtBeforeGst" class="readonly-cell summary-input" readonly placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">ADD GST</td>
+                        <td><input type="number" id="nsGst" class="readonly-cell summary-input" readonly placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label" style="font-size: 14px;">TOTAL</td>
+                        <td><input type="number" id="nsTotal" class="readonly-cell summary-input" style="font-size: 14px;" readonly placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">ADD TOWING</td>
+                        <td><input type="number" id="nsTowing" class="readonly-cell summary-input" readonly placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label" style="font-size: 14px;">GRAND TOTAL</td>
+                        <td><input type="number" id="nsGrandTotal" class="readonly-cell summary-input" style="font-size: 14px; color: #c82333; background-color: #f8d7da;" readonly placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">LESS SALVAGE</td>
+                        <td><input type="number" id="nsSalvage" class="readonly-cell summary-input" readonly placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">LESS EXCESS</td>
+                        <td><input type="number" id="nsExcess" class="readonly-cell summary-input" readonly placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label" style="font-size: 14px;">NET AMOUNT</td>
+                        <td><input type="number" id="nsNetAmount" class="readonly-cell summary-input" style="font-size: 14px; background-color: #d1ecf1; color: #0c5460;" readonly placeholder="0"></td>
+                    </tr>
+                    <tr>
+                        <td class="summary-label">TDS %</td>
+                        <td>
+                            <div class="tds-container">
+                                <input type="number" id="nsTdsPercent" class="readonly-cell summary-input" readonly placeholder="0" style="width: 40%;">
+                                <input type="number" id="nsTdsAmt" class="readonly-cell summary-input" readonly placeholder="0" style="width: 60%;">
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- NEW: NON-STD GST BREAKUP (Initially hidden) -->
+            <table id="nonStdGstBreakupTable" style="display: none; width: 300px; font-size: 13px; margin-bottom: 0;">
+                <thead>
+                    <tr>
+                        <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold;">Non-Std Labour & Parts GST Break-up</th>
+                    </tr>
+                </thead>
+                <tbody id="nsGstBreakupBody">
+                    <!-- Dynamically populated via JavaScript -->
+                </tbody>
+            </table>
+
         </div>
     </div>
 
@@ -587,6 +652,113 @@
 
             // 5. Render GST Breakup (Rounded to nearest Rupee)
             renderGstBreakup(labTotals.breakup, partTotals.breakup);
+
+            // =====================================================================
+            // NEW: NON-STANDARD REVERSE CALCULATION LOGIC
+            // =====================================================================
+            const nonStdPctInput = document.getElementById('nonStdPct');
+            const nonStdAmtInput = document.getElementById('nonStdAmt');
+            const isPctMode = document.querySelector('input[name="nonStdToggle"]:checked').value === 'pct';
+            
+            let targetTotal = 0;
+            let isNonStdActive = false;
+            let exactOriginalTotal = grandTotals.total; // Use exact unrounded total for precise scaling
+            
+            if (isPctMode && parseFloat(nonStdPctInput.value) > 0) {
+                targetTotal = exactOriginalTotal * (parseFloat(nonStdPctInput.value) / 100);
+                isNonStdActive = true;
+            } else if (!isPctMode && parseFloat(nonStdAmtInput.value) > 0) {
+                targetTotal = parseFloat(nonStdAmtInput.value);
+                isNonStdActive = true;
+            }
+
+            const nsSummaryTable = document.getElementById('nonStdSummaryTable');
+            const nsGstBreakupTable = document.getElementById('nonStdGstBreakupTable');
+
+            if (isNonStdActive && exactOriginalTotal > 0) {
+                nsSummaryTable.style.display = 'table';
+                nsGstBreakupTable.style.display = 'table';
+                
+                const kFactor = targetTotal / exactOriginalTotal;
+                
+                let nsLabBreakup = {};
+                let nsPartBreakup = {};
+                let nsAmtBeforeGst = 0;
+                let nsGstTotal = 0;
+                let nsTotalAmt = 0;
+                let allNsItems = [];
+                
+                const processNsRow = (row, breakupObj) => {
+                    let netAmt = parseFloat(row.querySelector('.net-amt').value) || 0;
+                    let gstPercent = parseFloat(row.querySelector('.gst-input').value) || 0;
+                    
+                    let scaledNet = netAmt * kFactor;
+                    let scaledGst = scaledNet * (gstPercent / 100);
+                    let scaledTotal = scaledNet + scaledGst;
+                    
+                    nsAmtBeforeGst += scaledNet;
+                    nsGstTotal += scaledGst;
+                    nsTotalAmt += scaledTotal;
+                    
+                    allNsItems.push({ net: scaledNet, gst: gstPercent });
+                    
+                    if (!breakupObj[gstPercent]) breakupObj[gstPercent] = { net: 0, gst: 0, total: 0 };
+                    breakupObj[gstPercent].net += scaledNet;
+                    breakupObj[gstPercent].gst += scaledGst;
+                    breakupObj[gstPercent].total += scaledTotal;
+                };
+
+                document.querySelectorAll('.labour-row').forEach(row => processNsRow(row, nsLabBreakup));
+                document.querySelectorAll('.parts-row').forEach(row => processNsRow(row, nsPartBreakup));
+
+                // TDS Calculation for Non-Standard
+                let nsTotalGstNet = allNsItems.filter(i => i.gst > 0).reduce((sum, i) => sum + i.net, 0);
+                let nsTdsBase = 0;
+
+                allNsItems.forEach(item => {
+                    if (item.gst > 0) {
+                        if (nsTotalGstNet > 0) {
+                            let apportionedExcess = (item.net / nsTotalGstNet) * excess; // applying the same excess
+                            let deflatedExcess = apportionedExcess / ((100 + item.gst) / 100);
+                            nsTdsBase += (item.net - deflatedExcess);
+                        }
+                    } else {
+                        nsTdsBase += item.net;
+                    }
+                });
+
+                if (nsTotalGstNet === 0 && excess > 0) {
+                    nsTdsBase -= excess;
+                }
+                nsTdsBase = Math.max(0, nsTdsBase);
+
+                let nsAutoTdsPercent = 0;
+                if (nsTdsBase > 250000) {
+                    nsAutoTdsPercent = 4;
+                } else if (nsTdsBase > 0) {
+                    nsAutoTdsPercent = 2;
+                }
+                let nsTdsAmt = Math.round(nsTdsBase * (nsAutoTdsPercent / 100));
+
+                // Populate Non-Standard Summary Board
+                document.getElementById('nsAmtBeforeGst').value = Math.round(nsAmtBeforeGst);
+                document.getElementById('nsGst').value = Math.round(nsGstTotal);
+                document.getElementById('nsTotal').value = Math.round(nsTotalAmt);
+                document.getElementById('nsTowing').value = towing;
+                document.getElementById('nsGrandTotal').value = Math.round(nsTotalAmt + towing);
+                document.getElementById('nsSalvage').value = salvage;
+                document.getElementById('nsExcess').value = excess;
+                document.getElementById('nsNetAmount').value = Math.round(nsTotalAmt + towing - salvage - excess);
+                document.getElementById('nsTdsPercent').value = nsAutoTdsPercent;
+                document.getElementById('nsTdsAmt').value = Math.round(nsTdsAmt);
+                
+                // Render Non-Standard GST Breakup
+                renderNsGstBreakup(nsLabBreakup, nsPartBreakup);
+                
+            } else {
+                nsSummaryTable.style.display = 'none';
+                nsGstBreakupTable.style.display = 'none';
+            }
         }
 
         function processRow(row, totalsObj, allItemsArray) {
@@ -645,6 +817,63 @@
 
         function renderGstBreakup(labourBreakup, partsBreakup) {
             const tbody = document.getElementById('gstBreakupBody');
+            let html = '';
+
+            const generateSection = (title, dataObj, prefixLabel) => {
+                html += `<tr>
+                            <th style="background-color: #ffe699; text-align: left;">${title}</th>
+                            <th style="background-color: #ffe699; text-align: right;">AMOUNT</th>
+                         </tr>`;
+                
+                let keys = Object.keys(dataObj).map(Number).sort((a, b) => a - b);
+                let counter = 1;
+
+                if (keys.length === 0) {
+                    html += `<tr><td colspan="2" style="height: 15px; border-left: none; border-right: none;"></td></tr>`;
+                    return;
+                }
+
+                keys.forEach(rate => {
+                    let data = dataObj[rate];
+                    if (data.net === 0 && data.gst === 0 && data.total === 0) return;
+
+                    let roundedNet = Math.round(data.net);
+                    let roundedGst = Math.round(data.gst);
+                    let roundedTotal = Math.round(data.total);
+
+                    if (rate === 0) {
+                        html += `<tr>
+                                    <td style="text-align: left; font-weight: bold;">${counter}. ${prefixLabel} - NO GST</td>
+                                    <td style="text-align: right;">${roundedNet}</td>
+                                 </tr>`;
+                    } else {
+                        html += `<tr>
+                                    <td style="text-align: left; font-weight: bold;">${counter}. ${prefixLabel}</td>
+                                    <td style="text-align: right;">${roundedNet}</td>
+                                 </tr>
+                                 <tr>
+                                    <td style="text-align: left;">GST ${rate}%</td>
+                                    <td style="text-align: right;">${roundedGst}</td>
+                                 </tr>
+                                 <tr>
+                                    <td style="text-align: left;">TOTAL</td>
+                                    <td style="text-align: right;">${roundedTotal}</td>
+                                 </tr>`;
+                    }
+                    html += `<tr><td colspan="2" style="height: 15px; border-left: none; border-right: none;"></td></tr>`;
+                    counter++;
+                });
+            };
+
+            generateSection('LABOUR GST-BREAK-UP', labourBreakup, 'LABOUR');
+            generateSection('PARTS GST-BREAK-UP', partsBreakup, 'PARTS');
+
+            tbody.innerHTML = html;
+        }
+
+        // NEW: Separate renderer for the Non-Standard Breakup to keep existing code pure
+        function renderNsGstBreakup(labourBreakup, partsBreakup) {
+            const tbody = document.getElementById('nsGstBreakupBody');
             let html = '';
 
             const generateSection = (title, dataObj, prefixLabel) => {
