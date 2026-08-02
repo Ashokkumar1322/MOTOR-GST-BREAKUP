@@ -35,12 +35,12 @@
             page-break-inside: avoid !important;
         }
 
-        /* Adjusted Column Widths */
+        /* Adjusted Column Widths for PDF space saving */
         .col-sno { width: 40px; }
         .col-cat { width: 170px; }
-        .col-amt { width: 95px; }
-        .col-narrow { width: 75px; } 
-        .col-action { width: 70px; } /* Widened for ROW -/+ */
+        .col-amt { width: 75px; } /* Reduced from 95px since decimals are gone */
+        .col-narrow { width: 55px; } /* Reduced from 75px for GST/IMT */
+        .col-action { width: 60px; } 
         
         select, input {
             width: 100%;
@@ -628,37 +628,33 @@
             return filename ? filename : "Claim_Calculation";
         }
 
-        // Export to PDF Logic - 100% FIXED FOR CLIPPING AND PAGE BREAKS
+        // Export to PDF Logic - Naturally scales to fit A4 Landscape without forced widths
         function exportToPdf() {
             window.scrollTo(0, 0); 
             
             const element = document.getElementById('calculatorContainer');
             
-            // Remove margin momentarily and FORCE width so camera gets perfectly aligned
+            // Momentarily remove body margin so the capture starts perfectly at x=0, y=0
             const originalBodyMargin = document.body.style.margin;
-            const originalWidth = element.style.width;
-            
             document.body.style.margin = '0';
-            element.style.width = '1400px'; 
             
             const opt = {
-                margin:       5, // Reduced to 5mm to give extra vertical space to fit the signature
+                margin:       5, // 5mm gives enough space to pull signature to page 2
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  { 
                     scale: 2, 
                     scrollX: 0, 
-                    scrollY: 0,
-                    windowWidth: 1400 // Aligns perfectly with the forced element width
+                    scrollY: 0
+                    // NO hardcoded windowWidth anymore! The slimmer table handles itself perfectly.
                 }, 
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' },
                 pagebreak:    { mode: 'css', avoid: ['tr', '.bottom-sections'] }
             };
 
             html2pdf().set(opt).from(element).save().then(() => {
-                // Restore styling immediately after generating
+                // Restore original margin
                 document.body.style.margin = originalBodyMargin;
-                element.style.width = originalWidth;
             });
         }
 
@@ -723,7 +719,7 @@
             };
             updateTotalRow('grandTotalRow', grandTotals);
 
-            // 4. Update Final Summary Section (Rounded to nearest Rupee - No decimals)
+            // 4. Update Final Summary Section
             let sumAmtBeforeGst = Math.round(grandTotals.net);
             let sumGst = Math.round(grandTotals.gst);
             let sumTotal = Math.round(grandTotals.total);
@@ -775,7 +771,7 @@
             document.getElementById('sumTdsPercent').value = autoTdsPercent;
             document.getElementById('sumTdsAmt').value = Math.round(tdsAmt);
 
-            // 5. Render GST Breakup (Rounded to nearest Rupee)
+            // 5. Render GST Breakup
             renderGstBreakup(labTotals.breakup, partTotals.breakup);
 
             // =====================================================================
@@ -886,6 +882,7 @@
             }
         }
 
+        // HIDDEN DECIMALS: Updated processRow to round displayed values to nearest whole number
         function processRow(row, totalsObj, allItemsArray) {
             let assessedInput = parseFloat(row.querySelector('.assessed-input').value) || 0;
             let depPercent = parseFloat(row.querySelector('.dep-input').value) || 0;
@@ -893,25 +890,25 @@
             let imt23Select = row.querySelector('.imt-select').value;
 
             let assessedCopy = assessedInput;
-            row.querySelector('.assessed-copy').value = assessedCopy.toFixed(2);
+            row.querySelector('.assessed-copy').value = Math.round(assessedCopy);
 
             let depAmt = assessedCopy * (depPercent / 100);
-            row.querySelector('.dep-amt').value = depAmt.toFixed(2);
+            row.querySelector('.dep-amt').value = Math.round(depAmt);
 
             let imtAmt = 0;
             if (imt23Select === 'Y') {
                 imtAmt = (assessedCopy - depAmt) / 2;
             }
-            row.querySelector('.imt-amt').value = imtAmt.toFixed(2);
+            row.querySelector('.imt-amt').value = Math.round(imtAmt);
 
             let netAmt = assessedCopy - depAmt - imtAmt;
-            row.querySelector('.net-amt').value = netAmt.toFixed(2);
+            row.querySelector('.net-amt').value = Math.round(netAmt);
 
             let gstAmt = netAmt * (gstPercent / 100);
-            row.querySelector('.gst-amt').value = gstAmt.toFixed(2);
+            row.querySelector('.gst-amt').value = Math.round(gstAmt);
 
             let totalAmt = netAmt + gstAmt;
-            row.querySelector('.total-amt').value = totalAmt.toFixed(2);
+            row.querySelector('.total-amt').value = Math.round(totalAmt);
 
             allItemsArray.push({ net: netAmt, gst: gstPercent });
 
@@ -930,14 +927,15 @@
             totalsObj.breakup[gstPercent].total += totalAmt;
         }
 
+        // HIDDEN DECIMALS: Updated updateTotalRow to round displayed values
         function updateTotalRow(rowId, totalsObj) {
             const row = document.getElementById(rowId);
-            row.querySelector('.t-assessed').value = totalsObj.assessed.toFixed(2);
-            row.querySelector('.t-dep').value = totalsObj.dep.toFixed(2);
-            row.querySelector('.t-imt').value = totalsObj.imt23.toFixed(2);
-            row.querySelector('.t-net').value = totalsObj.net.toFixed(2);
-            row.querySelector('.t-gst').value = totalsObj.gst.toFixed(2);
-            row.querySelector('.t-total').value = totalsObj.total.toFixed(2);
+            row.querySelector('.t-assessed').value = Math.round(totalsObj.assessed);
+            row.querySelector('.t-dep').value = Math.round(totalsObj.dep);
+            row.querySelector('.t-imt').value = Math.round(totalsObj.imt23);
+            row.querySelector('.t-net').value = Math.round(totalsObj.net);
+            row.querySelector('.t-gst').value = Math.round(totalsObj.gst);
+            row.querySelector('.t-total').value = Math.round(totalsObj.total);
         }
 
         function renderGstBreakup(labourBreakup, partsBreakup) {
