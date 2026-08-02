@@ -639,37 +639,32 @@
             return filename ? filename : "Claim_Calculation";
         }
 
-        // Export to PDF Logic - FIXED FOR LEFT CLIPPING & PAGE BREAKS
+        // Export to PDF Logic - REMOVED OFFSETS AND LOCKED WIDTH SAFELY
         function exportToPdf() {
-            // Force scroll to absolute top-left so nothing gets clipped based on viewport scroll
             window.scrollTo(0, 0); 
             
             const element = document.getElementById('calculatorContainer');
+            const originalMinWidth = element.style.minWidth;
             
-            // Lock the container to a specific width so the PDF engine captures the EXACT bounds 
-            // without trying to guess or shrink based on the user's screen size.
-            const originalWidth = element.style.width;
-            element.style.width = '1450px'; 
+            // Ensures the table stays strictly wide and doesn't wrap/squish during capture
+            element.style.minWidth = '1300px'; 
             
             const opt = {
-                margin:       [0.3, 0.2, 0.3, 0.2], // top, left, bottom, right margins
+                margin:       [0.3, 0.3, 0.3, 0.3], 
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  { 
                     scale: 2, 
                     scrollX: 0, 
-                    scrollY: 0,
-                    x: 0,
-                    y: 0,
-                    windowWidth: 1450 // Must perfectly match the locked element width
+                    scrollY: 0
                 }, 
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' },
-                pagebreak:    { mode: ['css', 'legacy'], avoid: 'tr' } // Prevents table rows from breaking in half
+                pagebreak:    { mode: ['css', 'legacy'], avoid: 'tr' } 
             };
 
             html2pdf().set(opt).from(element).save().then(() => {
-                // Restore original styling after the PDF is generated
-                element.style.width = originalWidth;
+                // Restore styling immediately after generating
+                element.style.minWidth = originalMinWidth;
             });
         }
 
