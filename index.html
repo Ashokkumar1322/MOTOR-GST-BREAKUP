@@ -411,21 +411,21 @@
                         <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold; border-top: 2px solid #000; padding: 8px;">Final Net Amount To Be Paid</th>
                     </tr>
                     <tr>
-                        <td class="summary-label">To Repairer</td>
-                        <td><input type="number" id="finalToRepairer" class="summary-input" placeholder="0"></td>
+                        <td class="summary-label">To Repairer (Before TDS)</td>
+                        <td><input type="number" id="finalToRepairer" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                     <tr>
                         <td class="summary-label">TDS</td>
-                        <td><input type="number" id="finalTds" class="summary-input" placeholder="0"></td>
+                        <td><input type="number" id="finalTds" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                     <tr>
                         <td class="summary-label">To Insured (Towing)</td>
-                        <td><input type="number" id="finalToInsuredTowing" class="summary-input" placeholder="0"></td>
+                        <td><input type="number" id="finalToInsuredTowing" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                     <tr><td colspan="2" style="border: none; height: 10px;"></td></tr>
                     <tr>
                         <td class="summary-label">To Insured</td>
-                        <td><input type="number" id="finalToInsured" class="summary-input" placeholder="0"></td>
+                        <td><input type="number" id="finalToInsured" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                 </tbody>
             </table>
@@ -605,21 +605,21 @@
                         <th colspan="2" style="background-color: #f2f2f2; text-align: center; font-weight: bold; border-top: 2px solid #000; padding: 8px;">Final Net Amount To Be Paid</th>
                     </tr>
                     <tr>
-                        <td class="summary-label">To Repairer</td>
-                        <td><input type="number" id="nsFinalToRepairer" class="summary-input" placeholder="0"></td>
+                        <td class="summary-label">To Repairer (Before TDS)</td>
+                        <td><input type="number" id="nsFinalToRepairer" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                     <tr>
                         <td class="summary-label">TDS</td>
-                        <td><input type="number" id="nsFinalTds" class="summary-input" placeholder="0"></td>
+                        <td><input type="number" id="nsFinalTds" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                     <tr>
                         <td class="summary-label">To Insured (Towing)</td>
-                        <td><input type="number" id="nsFinalToInsuredTowing" class="summary-input" placeholder="0"></td>
+                        <td><input type="number" id="nsFinalToInsuredTowing" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                     <tr><td colspan="2" style="border: none; height: 10px;"></td></tr>
                     <tr>
                         <td class="summary-label">To Insured</td>
-                        <td><input type="number" id="nsFinalToInsured" class="summary-input" placeholder="0"></td>
+                        <td><input type="number" id="nsFinalToInsured" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                 </tbody>
             </table>
@@ -858,17 +858,14 @@
             let towingPayee = document.getElementById('towingPayee').value;
             
             let stdFinalToInsuredTowing = (towingPayee === 'insured') ? towing : 0;
-            let stdFinalToRepairer = 0;
             let stdFinalToInsured = 0;
 
-            if (mainPayee === 'repairer') {
-                stdFinalToRepairer = netAmount - stdFinalToInsuredTowing - tdsAmt;
-            } else {
+            if (mainPayee !== 'repairer') {
                 stdFinalToInsured = netAmount - (towingPayee === 'repairer' ? towing : 0);
-                if (towingPayee === 'repairer') stdFinalToRepairer = towing;
             }
 
-            document.getElementById('finalToRepairer').value = Math.round(stdFinalToRepairer);
+            // As requested: "To Repairer (Before TDS)" gets the amount from 'NET AMOUNT'
+            document.getElementById('finalToRepairer').value = Math.round(netAmount);
             document.getElementById('finalTds').value = Math.round(tdsAmt);
             document.getElementById('finalToInsuredTowing').value = Math.round(stdFinalToInsuredTowing);
             document.getElementById('finalToInsured').value = Math.round(stdFinalToInsured);
@@ -985,17 +982,14 @@
                 
                 // --- FINAL NET AMOUNT TO BE PAID (NON-STANDARD CALC) ---
                 let nsFinalToInsuredTowing = (towingPayee === 'insured') ? Math.round(nsTowing) : 0;
-                let nsFinalToRepairer = 0;
                 let nsFinalToInsured = 0;
 
-                if (mainPayee === 'repairer') {
-                    nsFinalToRepairer = nsNetAmountVal - nsFinalToInsuredTowing - Math.round(nsTdsAmt);
-                } else {
+                if (mainPayee !== 'repairer') {
                     nsFinalToInsured = nsNetAmountVal - (towingPayee === 'repairer' ? Math.round(nsTowing) : 0);
-                    if (towingPayee === 'repairer') nsFinalToRepairer = Math.round(nsTowing);
                 }
 
-                document.getElementById('nsFinalToRepairer').value = nsFinalToRepairer;
+                // As requested: "To Repairer (Before TDS)" gets the amount from 'NET AMOUNT'
+                document.getElementById('nsFinalToRepairer').value = nsNetAmountVal;
                 document.getElementById('nsFinalTds').value = Math.round(nsTdsAmt);
                 document.getElementById('nsFinalToInsuredTowing').value = nsFinalToInsuredTowing;
                 document.getElementById('nsFinalToInsured').value = nsFinalToInsured;
