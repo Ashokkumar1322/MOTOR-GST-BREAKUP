@@ -46,23 +46,21 @@
             page-break-inside: avoid !important;
         }
 
-        /* TOP CLAIM TABLE: set actual column widths; do not shrink the whole table/font. */
+        /* TOP CLAIM TABLE ONLY: allocate space by actual information needed. */
         #calculatorContainer.pdf-export #claimTable {
             width: 175mm !important;
             min-width: 175mm !important;
             max-width: 175mm !important;
             table-layout: fixed !important;
             border-collapse: collapse !important;
-            margin-left: 0 !important;
-            margin-right: auto !important;
+            margin: 0 !important;
         }
         #calculatorContainer.pdf-export #claimTable th,
         #calculatorContainer.pdf-export #claimTable td {
             box-sizing: border-box !important;
-            padding: 2px 2px !important;
-            overflow-wrap: break-word !important;
-            word-break: normal !important;
-            text-align: center;
+            padding: 2px 1px !important;
+            overflow: hidden !important;
+            text-align: center !important;
         }
         #calculatorContainer.pdf-export #claimTable th {
             font-size: 9px !important;
@@ -74,39 +72,45 @@
             width: 100% !important;
             min-width: 0 !important;
             box-sizing: border-box !important;
-            padding: 2px 1px !important;
+            padding: 2px 0 !important;
             font-size: 9px !important;
             line-height: 1.15 !important;
         }
-
-        /* Column widths in the order shown in the user's requested header.
-           Narrow fields are reduced; amount columns retain room for figures. */
+        /* S.No, GST and action are deliberately narrow; IMT has room for N/Y. */
         #calculatorContainer.pdf-export #claimTable th:nth-child(1),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(1) { width: 6mm !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(1) { width: 5mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(2),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(2) { width: 18mm !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(2) { width: 17mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(3),
         #calculatorContainer.pdf-export #claimTable td:nth-child(3) { width: 22mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(4),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(4) { width: 10mm !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(4) { width: 12mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(5),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(5) { width: 8mm !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(5) { width: 7mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(6),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(6) { width: 10mm !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(6) { width: 12mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(7),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(7) { width: 3mm !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(7) { width: 2mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(8),
         #calculatorContainer.pdf-export #claimTable td:nth-child(8) { width: 22mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(9),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(9) { width: 14mm !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(9) { width: 12mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(10),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(10) { width: 16mm !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(10) { width: 14mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(11),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(11) { width: 17mm !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(11) { width: 16mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(12),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(12) { width: 12mm !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(12) { width: 10mm !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(13),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(13) { width: 17mm !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(13) { width: 16mm !important; }
+
+        /* Print depreciation dropdown left-aligned so the percentage is visible first. */
+        #calculatorContainer.pdf-export #claimTable .dep-select {
+            text-align: left !important;
+            text-align-last: left !important;
+            direction: ltr !important;
+            font-size: 8.5px !important;
+        }
 
         #calculatorContainer.pdf-export {
             width: 185mm !important;
@@ -416,7 +420,7 @@
                     <td><input type="text" placeholder="Enter Part Name" style="text-align: left;"></td>
                     <td><input type="number" class="assessed-input" placeholder="0"></td>
                     <td>
-                        <select class="dep-input">
+                        <select class="dep-input dep-select">
                             <option value="0" selected>0%</option>
                             <option value="0">&lt;= 6m = 0%</option>
                             <option value="5">&gt; 6m, &lt;= 1y = 5%</option>
@@ -426,9 +430,9 @@
                             <option value="35">&gt; 4y, &lt;= 5y = 35%</option>
                             <option value="40">&gt; 5y, &lt;= 10y = 40%</option>
                             <option value="50">&gt; 10y = 50%</option>
-                            <option value="0">Glass = 0%</option>
-                            <option value="30">Fibre Glass = 30%</option>
-                            <option value="50">Rubber/Nylon... = 50%</option>
+                            <option value="0">0% - Glass</option>
+                            <option value="30">30% - Fibre Glass</option>
+                            <option value="50">50% - Rubber/Nylon</option>
                         </select>
                     </td>
                     <td><input type="number" class="gst-input" value="18"></td>
@@ -915,7 +919,7 @@
                     scale: 2,
                     scrollX: 0,
                     scrollY: 0,
-                    windowWidth: 1100,
+                    windowWidth: 1200,
                     useCORS: true
                 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
@@ -1381,7 +1385,7 @@
             const depHTML = type === 'labour'
                 ? `<td><input type="number" class="dep-input" value="0" step="0.01"></td>`
                 : `<td>
-                    <select class="dep-input">
+                    <select class="dep-input dep-select">
                         <option value="0" selected>0%</option>
                         <option value="0">&lt;= 6m = 0%</option>
                         <option value="5">&gt; 6m, &lt;= 1y = 5%</option>
@@ -1391,9 +1395,9 @@
                         <option value="35">&gt; 4y, &lt;= 5y = 35%</option>
                         <option value="40">&gt; 5y, &lt;= 10y = 40%</option>
                         <option value="50">&gt; 10y = 50%</option>
-                        <option value="0">Glass = 0%</option>
-                        <option value="30">Fibre Glass = 30%</option>
-                        <option value="50">Rubber/Nylon... = 50%</option>
+                        <option value="0">0% - Glass</option>
+                        <option value="30">30% - Fibre Glass</option>
+                        <option value="50">50% - Rubber/Nylon</option>
                     </select>
                    </td>`;
 
