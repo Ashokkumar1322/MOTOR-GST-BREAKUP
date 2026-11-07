@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Motor Insurance Claim Calculator</title>
     
-    <!-- Required Libraries for PDF and Excel Export -->
+    <!-- PDF export library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <style>
         body {
@@ -47,12 +46,26 @@
             page-break-inside: avoid !important;
         }
 
-        /* Adjusted Column Widths for PDF space saving */
-        .col-sno { width: 30px; } 
-        .col-cat { width: 110px; } 
-        .col-amt { width: 60px; } 
-        .col-narrow { width: 38px; } 
-        .col-action { width: 38px; } 
+        /* Compact claim-table columns to help the A4 portrait PDF fit */
+        #claimTable {
+            table-layout: fixed;
+            width: 100%;
+        }
+        #claimTable th, #claimTable td {
+            padding: 3px 2px;
+            overflow-wrap: anywhere;
+        }
+        #claimTable input, #claimTable select {
+            min-width: 0;
+            padding: 3px 1px;
+            font-size: 10px;
+        }
+        .col-sno { width: 22px; }
+        .col-cat { width: 82px; }
+        .col-amt { width: 54px; }
+        .col-narrow { width: 27px; }
+        .col-action { width: 24px; }
+        .spacer { width: 4px; } 
         
         select, input {
             width: 100%;
@@ -201,6 +214,11 @@
         }
 
         /* Hide specific elements ONLY during the PDF/Print export */
+        @page {
+            size: A4 portrait;
+            margin: 4mm;
+        }
+
         @media print {
             .no-print {
                 display: none !important;
@@ -224,7 +242,6 @@
         <div class="header-container">
             <h2>Motor Insurance Claim Calculator</h2>
             <div class="export-controls no-print">
-                <button id="btnExportExcel" class="btn btn-export" onclick="exportToExcel()">📊 Download as Excel</button>
                 <button id="btnExportPdf" class="btn btn-export" onclick="exportToPdf()">📄 Download as PDF</button>
             </div>
         </div>
@@ -521,7 +538,7 @@
                     </tr>
                     <tr>
                         <td style="text-align: left; font-weight: bold;">CLAIM APPROVED FOR Rs.</td>
-                        <td><input type="number" placeholder="0"></td>
+                        <td><input type="number" id="claimApprovedInput" placeholder="0"></td>
                     </tr>
                     <tr>
                         <td class="highlight-label" style="text-align: left; font-weight: bold;">PAYMENT TO</td>
@@ -534,7 +551,7 @@
                     </tr>
                     <tr>
                         <td style="text-align: left; font-weight: bold;">FEES APPROVED FOR Rs.</td>
-                        <td><input type="number" placeholder="0"></td>
+                        <td><input type="number" id="feesApprovedInput" placeholder="0"></td>
                     </tr>
                     <tr>
                         <td style="text-align: left; font-weight: bold;">64VB</td>
@@ -567,9 +584,9 @@
                     <tr>
                         <td colspan="2" style="text-align: left; font-size: 11px; font-style: italic; background-color: #fdfdfd; line-height: 1.5;">
                             Claim papers are in order. Section 64vb has been complied.<br>
-                            The claim is approved for Rs. <input type="number" style="width: 100px; display: inline-block;" placeholder="0">.<br>
+                            The claim is approved for Rs. <input type="number" id="statementClaimApproved" style="width: 100px; display: inline-block;" placeholder="0" readonly>.<br>
                             To be paid to the Insured / Repairer.<br>
-                            Survey / Inves / Legal Fee is approved for Rs. <input type="number" style="width: 100px; display: inline-block;" placeholder="0">.
+                            Survey / Inves / Legal Fee is approved for Rs. <input type="number" id="statementFeesApproved" style="width: 100px; display: inline-block;" placeholder="0" readonly>.
                         </td>
                     </tr>
                     <tr>
@@ -708,6 +725,14 @@
         });
 
         document.getElementById('calculatorContainer').addEventListener('input', calculateAll);
+
+        // Keep the sanctioning statement amounts synchronized with the approved amounts above.
+        function syncApprovedAmounts() {
+            document.getElementById('statementClaimApproved').value = document.getElementById('claimApprovedInput').value;
+            document.getElementById('statementFeesApproved').value = document.getElementById('feesApprovedInput').value;
+        }
+        document.getElementById('claimApprovedInput').addEventListener('input', syncApprovedAmounts);
+        document.getElementById('feesApprovedInput').addEventListener('input', syncApprovedAmounts);
         
         document.getElementById('calculatorContainer').addEventListener('change', function(e) {
             if (e.target.classList.contains('cat-select')) {
@@ -747,60 +772,27 @@
             return filename ? filename : "Claim_Calculation";
         }
 
-        // Export to PDF Logic - UPGRADED TO A3 LANDSCAPE SO IT FITS NATIVELY WITHOUT WIDTH HACKS
+        // Export PDF in A4 portrait format.
         function exportToPdf() {
-            window.scrollTo(0, 0); 
-            
+            window.scrollTo(0, 0);
+
             const element = document.getElementById('calculatorContainer');
-            
+
             const opt = {
-                margin:       5, 
+                margin:       4,
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
-                html2canvas:  { 
-                    scale: 2, 
-                    scrollX: 0, 
+                html2canvas:  {
+                    scale: 2,
+                    scrollX: 0,
                     scrollY: 0,
-                    windowWidth: element.scrollWidth // captures natural width
-                }, 
-                // Changing to a3 orientation guarantees the massive table width fits completely.
-                // It will shrink automatically to fit whatever paper size the user selects when printing.
-                jsPDF:        { unit: 'mm', format: 'a3', orientation: 'landscape' },
+                    windowWidth: element.scrollWidth
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak:    { mode: 'css', avoid: ['tr', '.bottom-sections'] }
             };
 
             html2pdf().set(opt).from(element).save();
-        }
-
-        // Export to Excel Logic
-        function exportToExcel() {
-            let clone = document.getElementById('calculatorContainer').cloneNode(true);
-            let liveInputs = document.getElementById('calculatorContainer').querySelectorAll('input, select');
-            let cloneInputs = clone.querySelectorAll('input, select');
-            
-            for (let i = 0; i < liveInputs.length; i++) {
-                let val = liveInputs[i].value;
-                if (liveInputs[i].tagName === 'SELECT') {
-                    val = liveInputs[i].options[liveInputs[i].selectedIndex].text;
-                }
-                let textNode = document.createTextNode(val);
-                cloneInputs[i].parentNode.replaceChild(textNode, cloneInputs[i]);
-            }
-
-            let wb = XLSX.utils.book_new();
-            let ws_data = [];
-            
-            clone.querySelectorAll('table').forEach(tbl => {
-                if (tbl.style.display === 'none') return; 
-                let sheet = XLSX.utils.table_to_sheet(tbl);
-                let json = XLSX.utils.sheet_to_json(sheet, {header: 1});
-                ws_data.push(...json);
-                ws_data.push([]); 
-            });
-            
-            let ws = XLSX.utils.aoa_to_sheet(ws_data);
-            XLSX.utils.book_append_sheet(wb, ws, "Claim_Details");
-            XLSX.writeFile(wb, getExportFilename() + '.xlsx');
         }
 
         function calculateAll() {
@@ -1323,7 +1315,7 @@
             }
         }
 
-        window.onload = calculateAll;
+        window.onload = function() { calculateAll(); syncApprovedAmounts(); };
     </script>
 </body>
 </html>
