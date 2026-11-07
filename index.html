@@ -70,8 +70,10 @@
         /* PDF-only layout: stack the lower tables vertically instead of
            placing three wide tables side-by-side, which caused left clipping. */
         #calculatorContainer.pdf-export {
-            width: 100% !important;
-            max-width: 100% !important;
+            /* A4 width 210 mm minus 20 mm left filing margin and 5 mm right margin. */
+            width: 185mm !important;
+            min-width: 185mm !important;
+            max-width: 185mm !important;
             margin: 0 !important;
             padding: 0 !important;
             box-sizing: border-box !important;
@@ -84,6 +86,11 @@
         }
         #calculatorContainer.pdf-export #claimTable {
             width: 100% !important;
+            max-width: 100% !important;
+            table-layout: fixed !important;
+        }
+        #calculatorContainer.pdf-export table {
+            box-sizing: border-box !important;
             max-width: 100% !important;
         }
         #calculatorContainer.pdf-export .bottom-sections {
@@ -829,29 +836,56 @@
             window.scrollTo(0, 0);
 
             const element = document.getElementById('calculatorContainer');
+            const bottom = element.querySelector('.bottom-sections');
+            const claimParticulars = document.getElementById('claimParticularsTable');
+            const nonStdSummary = document.getElementById('nonStdSummaryTable');
+            const nonStdGst = document.getElementById('nonStdGstBreakupTable');
+
+            // Placeholders restore the live calculator's original table order after export.
+            const summaryPlaceholder = document.createComment('non-standard summary original position');
+            const gstPlaceholder = document.createComment('non-standard GST original position');
+            if (nonStdSummary.parentNode) nonStdSummary.parentNode.insertBefore(summaryPlaceholder, nonStdSummary);
+            if (nonStdGst.parentNode) nonStdGst.parentNode.insertBefore(gstPlaceholder, nonStdGst);
+
+            // Active non-standard tables go immediately before Claim Particulars in the PDF.
+            // Claim Particulars, including the sanctioning signature/seal, remains last.
+            if (claimParticulars && nonStdSummary.style.display !== 'none') {
+                bottom.insertBefore(nonStdSummary, claimParticulars);
+            }
+            if (claimParticulars && nonStdGst.style.display !== 'none') {
+                bottom.insertBefore(nonStdGst, claimParticulars);
+            }
+
             element.classList.add('pdf-export');
 
             const opt = {
-                // 18 mm left margin is reserved for punching/file binding.
-                margin:       [8, 7, 8, 18],
+                // html2pdf order: [top, right, bottom, left].
+                // 20 mm LEFT margin is reserved for punching/file binding.
+                margin:       [8, 5, 8, 20],
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  {
                     scale: 2,
                     scrollX: 0,
                     scrollY: 0,
-                    windowWidth: document.documentElement.clientWidth,
+                    windowWidth: 800,
                     useCORS: true
                 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr'] }
             };
 
-            html2pdf().set(opt).from(element).save().then(() => {
+            const restoreLayout = () => {
                 element.classList.remove('pdf-export');
-            }).catch(() => {
-                element.classList.remove('pdf-export');
-            });
+                if (summaryPlaceholder.parentNode) {
+                    summaryPlaceholder.parentNode.replaceChild(nonStdSummary, summaryPlaceholder);
+                }
+                if (gstPlaceholder.parentNode) {
+                    gstPlaceholder.parentNode.replaceChild(nonStdGst, gstPlaceholder);
+                }
+            };
+
+            html2pdf().set(opt).from(element).save().then(restoreLayout).catch(restoreLayout);
         }
 
         function calculateAll() {
