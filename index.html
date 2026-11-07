@@ -46,31 +46,44 @@
             page-break-inside: avoid !important;
         }
 
-        /* Compact claim-table columns to fit A4 portrait while keeping all figures readable. */
+        /* Compact PDF layout for A4 portrait. */
         #claimTable {
-            table-layout: fixed;
             width: 100%;
+            table-layout: fixed;
         }
         #claimTable th, #claimTable td {
-            padding: 2px 1px;
+            padding: 1px !important;
             overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        #claimTable th {
+            font-size: 8px !important;
+            line-height: 1.05;
         }
         #claimTable input, #claimTable select {
-            min-width: 0;
-            padding: 2px 0;
-            font-size: 9px;
+            min-width: 0 !important;
+            width: 100% !important;
+            padding: 1px 0 !important;
+            font-size: 8px !important;
         }
-        .col-sno { width: 16px; }
-        .col-cat { width: 58px; }
-        .col-amt { width: 45px; }
-        .col-narrow { width: 21px; }
-        .col-action { width: 18px; }
-        .spacer { width: 2px; }
 
-        /* PDF-only layout: stack the lower tables vertically instead of
-           placing three wide tables side-by-side, which caused left clipping. */
+        /* Explicit widths for all 14 columns, including the narrow separator. */
+        #claimTable th:nth-child(1), #claimTable td:nth-child(1) { width: 3%; }
+        #claimTable th:nth-child(2), #claimTable td:nth-child(2) { width: 8%; }
+        #claimTable th:nth-child(3), #claimTable td:nth-child(3) { width: 10%; }
+        #claimTable th:nth-child(4), #claimTable td:nth-child(4) { width: 4%; }
+        #claimTable th:nth-child(5), #claimTable td:nth-child(5) { width: 4%; }
+        #claimTable th:nth-child(6), #claimTable td:nth-child(6) { width: 5%; }
+        #claimTable th:nth-child(7), #claimTable td:nth-child(7) { width: 1%; }
+        #claimTable th:nth-child(8), #claimTable td:nth-child(8) { width: 10%; }
+        #claimTable th:nth-child(9), #claimTable td:nth-child(9) { width: 7%; }
+        #claimTable th:nth-child(10), #claimTable td:nth-child(10) { width: 9%; }
+        #claimTable th:nth-child(11), #claimTable td:nth-child(11) { width: 9%; }
+        #claimTable th:nth-child(12), #claimTable td:nth-child(12) { width: 7%; }
+        #claimTable th:nth-child(13), #claimTable td:nth-child(13) { width: 10%; }
+        #claimTable th:nth-child(14), #claimTable td:nth-child(14) { width: 3%; }
+
         #calculatorContainer.pdf-export {
-            /* A4 width 210 mm minus 20 mm left filing margin and 5 mm right margin. */
             width: 185mm !important;
             min-width: 185mm !important;
             max-width: 185mm !important;
@@ -79,44 +92,45 @@
             box-sizing: border-box !important;
             overflow: visible !important;
         }
-        #calculatorContainer.pdf-export .header-container {
-            width: 100% !important;
-            box-sizing: border-box !important;
-            flex-wrap: wrap;
-        }
+        #calculatorContainer.pdf-export .header-container,
         #calculatorContainer.pdf-export #claimTable {
             width: 100% !important;
             max-width: 100% !important;
-            table-layout: fixed !important;
-        }
-        #calculatorContainer.pdf-export table {
             box-sizing: border-box !important;
-            max-width: 100% !important;
         }
         #calculatorContainer.pdf-export .bottom-sections {
-            display: block !important;
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+            gap: 5mm !important;
+            align-items: start !important;
             width: 100% !important;
             max-width: 100% !important;
         }
         #calculatorContainer.pdf-export .bottom-sections > table {
-            display: table !important;
+            display: table;
             width: 100% !important;
             max-width: 100% !important;
-            margin: 12px 0 !important;
-            table-layout: fixed;
-            page-break-inside: auto !important;
+            min-width: 0 !important;
+            margin: 4mm 0 !important;
+            table-layout: fixed !important;
+            break-inside: auto;
         }
-        #calculatorContainer.pdf-export .bottom-sections tr {
-            page-break-inside: avoid !important;
+        #calculatorContainer.pdf-export #claimParticularsTable {
+            grid-column: 1 / -1 !important;
         }
         #calculatorContainer.pdf-export #summaryTable,
         #calculatorContainer.pdf-export #gstBreakupTable,
-        #calculatorContainer.pdf-export #claimParticularsTable,
         #calculatorContainer.pdf-export #nonStdSummaryTable,
         #calculatorContainer.pdf-export #nonStdGstBreakupTable {
-            width: 100% !important;
+            grid-column: auto !important;
         }
-
+        #calculatorContainer.pdf-export .no-print {
+            display: none !important;
+        }
+        #calculatorContainer.pdf-export tr {
+            break-inside: avoid !important;
+            page-break-inside: avoid !important;
+        }
         select, input {
             width: 100%;
             padding: 4px;
@@ -835,33 +849,41 @@
         function exportToPdf() {
             window.scrollTo(0, 0);
 
-            const element = document.getElementById('calculatorContainer');
-            const bottom = element.querySelector('.bottom-sections');
-            const claimParticulars = document.getElementById('claimParticularsTable');
-            const nonStdSummary = document.getElementById('nonStdSummaryTable');
-            const nonStdGst = document.getElementById('nonStdGstBreakupTable');
+            const liveElement = document.getElementById('calculatorContainer');
+            const exportElement = liveElement.cloneNode(true);
+            exportElement.classList.add('pdf-export');
 
-            // Placeholders restore the live calculator's original table order after export.
-            const summaryPlaceholder = document.createComment('non-standard summary original position');
-            const gstPlaceholder = document.createComment('non-standard GST original position');
-            if (nonStdSummary.parentNode) nonStdSummary.parentNode.insertBefore(summaryPlaceholder, nonStdSummary);
-            if (nonStdGst.parentNode) nonStdGst.parentNode.insertBefore(gstPlaceholder, nonStdGst);
+            // Reorder only the PDF copy: standard summary + GST breakup,
+            // then any active non-standard working, then Claim Particulars.
+            const bottom = exportElement.querySelector('.bottom-sections');
+            const claimParticulars = exportElement.querySelector('#claimParticularsTable');
+            const nonStdSummary = exportElement.querySelector('#nonStdSummaryTable');
+            const nonStdGst = exportElement.querySelector('#nonStdGstBreakupTable');
 
-            // Active non-standard tables go immediately before Claim Particulars in the PDF.
-            // Claim Particulars, including the sanctioning signature/seal, remains last.
-            if (claimParticulars && nonStdSummary.style.display !== 'none') {
+            if (claimParticulars && nonStdSummary && nonStdSummary.style.display !== 'none') {
                 bottom.insertBefore(nonStdSummary, claimParticulars);
             }
-            if (claimParticulars && nonStdGst.style.display !== 'none') {
+            if (claimParticulars && nonStdGst && nonStdGst.style.display !== 'none') {
                 bottom.insertBefore(nonStdGst, claimParticulars);
             }
 
-            element.classList.add('pdf-export');
+            // The live form's current input values are copied into the export clone.
+            const liveFields = liveElement.querySelectorAll('input, select, textarea');
+            const exportFields = exportElement.querySelectorAll('input, select, textarea');
+            liveFields.forEach((field, index) => {
+                const copy = exportFields[index];
+                if (!copy) return;
+                if (field.type === 'checkbox' || field.type === 'radio') {
+                    copy.checked = field.checked;
+                } else {
+                    copy.value = field.value;
+                }
+            });
 
             const opt = {
-                // html2pdf order: [top, right, bottom, left].
-                // 20 mm LEFT margin is reserved for punching/file binding.
-                margin:       [8, 5, 8, 20],
+                // html2pdf margin order is [top, left, bottom, right].
+                // The 20 mm filing margin is deliberately on the LEFT.
+                margin:       [8, 20, 8, 5],
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  {
@@ -875,17 +897,7 @@
                 pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr'] }
             };
 
-            const restoreLayout = () => {
-                element.classList.remove('pdf-export');
-                if (summaryPlaceholder.parentNode) {
-                    summaryPlaceholder.parentNode.replaceChild(nonStdSummary, summaryPlaceholder);
-                }
-                if (gstPlaceholder.parentNode) {
-                    gstPlaceholder.parentNode.replaceChild(nonStdGst, gstPlaceholder);
-                }
-            };
-
-            html2pdf().set(opt).from(element).save().then(restoreLayout).catch(restoreLayout);
+            html2pdf().set(opt).from(exportElement).save();
         }
 
         function calculateAll() {
