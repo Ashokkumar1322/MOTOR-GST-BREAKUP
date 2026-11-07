@@ -70,13 +70,14 @@
             padding: 3px 1px;
             font-size: 10px;
         }
-        .col-sno { width: 22px; }
+        .col-sno { width: 18px; } /* S.No needs only two digits */
         .col-cat { width: 82px; }
         .col-amt { width: 52px; } /* small increase so full figures remain visible */
         .col-narrow { width: 27px; }
+        .col-dep { width: 37px; } /* extra room for percentage and dropdown arrow */
         .col-gst { width: 25px; } /* compact GST %: only two digits */
         .col-imt { width: 27px; } /* keep N/Y compact */
-        .col-calcamt { width: 34px; } /* small increase to prevent last digit clipping */
+        .col-calcamt { width: 37px; } /* tiny increase for full amount digits */
         .col-action { width: 24px; }
         .spacer { width: 4px; } 
         
@@ -120,6 +121,20 @@
             font-weight: 900;
             color: #c82333; 
             background-color: #f8d7da;
+        }
+
+
+        /* Numeric figures in all calculated amount columns must line up
+           against the right edge, including Labour/Parts/Grand Totals. */
+        #claimTable td:nth-child(8) input,
+        #claimTable td:nth-child(9) input,
+        #claimTable td:nth-child(10) input,
+        #claimTable td:nth-child(11) input,
+        #claimTable td:nth-child(12) input,
+        #claimTable td:nth-child(13) input {
+            text-align: right !important;
+            box-sizing: border-box;
+            padding-right: 4px !important;
         }
 
         /* Layout for Bottom Section */
@@ -216,6 +231,21 @@
             width: 60%;
         }
 
+
+        /* Centre all entered particulars in the second column.
+           !important overrides the older inline left-alignment styles. */
+        #claimParticularsTable td:last-child,
+        #claimParticularsTable td:last-child input,
+        #claimParticularsTable td:last-child select {
+            text-align: center !important;
+        }
+        #claimParticularsTable td:last-child input[type="date"] {
+            text-align: center !important;
+            text-align-last: center !important;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
         .btn {
             cursor: pointer;
             padding: 4px 8px;
@@ -310,6 +340,14 @@
         }
 
         @media print {
+            /* Claim Particulars always starts on a fresh printed page. */
+            #claimParticularsTable {
+                page-break-before: always !important;
+                break-before: page !important;
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+
             html, body {
                 width: auto !important;
                 min-width: 0 !important;
@@ -386,7 +424,7 @@
                     <th class="col-sno">S.No</th>
                     <th class="col-cat">Category</th>
                     <th class="col-amt">Assessed Amt<br>Before Dep</th>
-                    <th class="col-narrow">DEP %</th>
+                    <th class="col-dep">DEP %</th>
                     <th class="col-gst">GST<br>%</th>
                     <th class="col-imt">IMT 23<br>N/Y</th>
                     <th class="spacer"></th>
