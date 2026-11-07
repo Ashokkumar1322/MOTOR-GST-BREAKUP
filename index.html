@@ -74,9 +74,9 @@
         .col-cat { width: 82px; }
         .col-amt { width: 50px; } /* slight reduction only */
         .col-narrow { width: 27px; }
-        .col-gst { width: 36px; } /* enough room to show default 18% */
+        .col-gst { width: 25px; } /* compact GST %: only two digits */
         .col-imt { width: 27px; } /* keep N/Y compact */
-        .col-calcamt { width: 25px; } /* slight reduction in calculated amount columns */
+        .col-calcamt { width: 31px; } /* enough room for the last amount digit */
         .col-action { width: 24px; }
         .spacer { width: 4px; } 
         
@@ -301,6 +301,27 @@
             padding-bottom: 4px;
         }
 
+
+        /* Exact-width export layout: A4 portrait printable width after
+           12 mm left punch margin and 4 mm right margin. */
+        #calculatorContainer.pdf-export-layout {
+            width: 730px !important;
+            max-width: 730px !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+        }
+        #calculatorContainer.pdf-export-layout #claimTable,
+        #calculatorContainer.pdf-export-layout #claimParticularsTable {
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: fixed;
+        }
+        #calculatorContainer.pdf-export-layout .bottom-sections {
+            width: 100% !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+        }
+
         /* Hide specific elements ONLY during the PDF/Print export */
         @page {
             size: A4 portrait;
@@ -350,7 +371,7 @@
                     <th class="col-cat">Category</th>
                     <th class="col-amt">Assessed Amt<br>Before Dep</th>
                     <th class="col-narrow">DEP %</th>
-                    <th class="col-gst">GST %</th>
+                    <th class="col-gst">GST<br>%</th>
                     <th class="col-imt">IMT 23<br>N/Y</th>
                     <th class="spacer"></th>
                     <th class="col-amt">Assessed-<br>Before Dep</th>
@@ -869,27 +890,44 @@
             return filename ? filename : "Claim_Calculation";
         }
 
-        // Export PDF in A4 portrait format with extra left margin for punching.
+        // Export PDF in A4 portrait format with a fixed printable width.
+        // The 12 mm left margin is reserved for punching holes.
         function exportToPdf() {
             window.scrollTo(0, 0);
 
             const element = document.getElementById('calculatorContainer');
+            const originalClass = element.className;
+            const originalWidth = element.style.width;
+            const originalMaxWidth = element.style.maxWidth;
+
+            element.classList.add('pdf-export-layout');
+            element.style.width = '730px';
+            element.style.maxWidth = '730px';
 
             const opt = {
                 margin:       [4, 4, 4, 12],
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  {
-                    scale: 2,
+                    scale: 1.5,
                     scrollX: 0,
                     scrollY: 0,
-                    windowWidth: element.scrollWidth
+                    windowWidth: 800,
+                    width: 730
                 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: 'css', avoid: ['tr', '.bottom-sections'] }
+                pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr'] }
             };
 
-            html2pdf().set(opt).from(element).save();
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.className = originalClass;
+                element.style.width = originalWidth;
+                element.style.maxWidth = originalMaxWidth;
+            }).catch(() => {
+                element.className = originalClass;
+                element.style.width = originalWidth;
+                element.style.maxWidth = originalMaxWidth;
+            });
         }
 
         function calculateAll() {
