@@ -72,11 +72,11 @@
         }
         .col-sno { width: 22px; }
         .col-cat { width: 82px; }
-        .col-amt { width: 50px; } /* slight reduction only */
+        .col-amt { width: 52px; } /* small increase so full figures remain visible */
         .col-narrow { width: 27px; }
         .col-gst { width: 25px; } /* compact GST %: only two digits */
         .col-imt { width: 27px; } /* keep N/Y compact */
-        .col-calcamt { width: 31px; } /* enough room for the last amount digit */
+        .col-calcamt { width: 34px; } /* small increase to prevent last digit clipping */
         .col-action { width: 24px; }
         .spacer { width: 4px; } 
         
@@ -302,26 +302,6 @@
         }
 
 
-        /* Exact-width export layout: A4 portrait printable width after
-           12 mm left punch margin and 4 mm right margin. */
-        #calculatorContainer.pdf-export-layout {
-            width: 730px !important;
-            max-width: 730px !important;
-            margin: 0 !important;
-            box-sizing: border-box !important;
-        }
-        #calculatorContainer.pdf-export-layout #claimTable,
-        #calculatorContainer.pdf-export-layout #claimParticularsTable {
-            width: 100% !important;
-            max-width: 100% !important;
-            table-layout: fixed;
-        }
-        #calculatorContainer.pdf-export-layout .bottom-sections {
-            width: 100% !important;
-            display: flex !important;
-            flex-wrap: wrap !important;
-        }
-
         /* Hide specific elements ONLY during the PDF/Print export */
         @page {
             size: A4 portrait;
@@ -330,13 +310,48 @@
         }
 
         @media print {
-            body {
-                margin: 0;
+            html, body {
+                width: auto !important;
+                min-width: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: visible !important;
             }
             #calculatorContainer {
-                width: 100%;
-                max-width: none;
-                margin: 0;
+                width: 100% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-sizing: border-box !important;
+            }
+            .bottom-sections {
+                width: 100% !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 8px 10px !important;
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+            #summaryTable, #gstBreakupTable,
+            #nonStdSummaryTable, #nonStdGstBreakupTable {
+                flex: 0 0 calc(50% - 5px) !important;
+                width: calc(50% - 5px) !important;
+                max-width: calc(50% - 5px) !important;
+                box-sizing: border-box !important;
+            }
+            #claimParticularsTable {
+                flex: 0 0 100% !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+            table {
+                max-width: 100% !important;
+            }
+            tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
             .no-print {
                 display: none !important;
@@ -347,7 +362,8 @@
             .final-amount-header {
                 background-color: #004085 !important;
                 -webkit-print-color-adjust: exact;
-                color-adjust: exact;
+                print-color-adjust: exact;
+                color: #fff !important;
             }
         }
     </style>
@@ -360,7 +376,7 @@
         <div class="header-container">
             <h2>Motor Insurance Claim Calculator</h2>
             <div class="export-controls no-print">
-                <button id="btnExportPdf" class="btn btn-export" onclick="exportToPdf()">📄 Download as PDF</button>
+                <button id="btnExportPdf" class="btn btn-export" onclick="exportToPdf()">🖨 Print / Save as PDF</button>
             </div>
         </div>
 
@@ -890,44 +906,10 @@
             return filename ? filename : "Claim_Calculation";
         }
 
-        // Export PDF in A4 portrait format with a fixed printable width.
-        // The 12 mm left margin is reserved for punching holes.
+        // Use the browser's native print layout for reliable A4 portrait output.
+        // In the print dialog, choose "Save as PDF" to create the PDF file.
         function exportToPdf() {
-            window.scrollTo(0, 0);
-
-            const element = document.getElementById('calculatorContainer');
-            const originalClass = element.className;
-            const originalWidth = element.style.width;
-            const originalMaxWidth = element.style.maxWidth;
-
-            element.classList.add('pdf-export-layout');
-            element.style.width = '730px';
-            element.style.maxWidth = '730px';
-
-            const opt = {
-                margin:       [4, 4, 4, 12],
-                filename:     getExportFilename() + '.pdf',
-                image:        { type: 'jpeg', quality: 1 },
-                html2canvas:  {
-                    scale: 1.5,
-                    scrollX: 0,
-                    scrollY: 0,
-                    windowWidth: 800,
-                    width: 730
-                },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr'] }
-            };
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                element.className = originalClass;
-                element.style.width = originalWidth;
-                element.style.maxWidth = originalMaxWidth;
-            }).catch(() => {
-                element.className = originalClass;
-                element.style.width = originalWidth;
-                element.style.maxWidth = originalMaxWidth;
-            });
+            window.print();
         }
 
         function calculateAll() {
