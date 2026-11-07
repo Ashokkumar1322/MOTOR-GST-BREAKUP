@@ -46,27 +46,70 @@
             page-break-inside: avoid !important;
         }
 
-        /* Compact claim-table columns to help the A4 portrait PDF fit */
+        /* Compact claim-table columns to fit A4 portrait while keeping all figures readable. */
         #claimTable {
             table-layout: fixed;
             width: 100%;
         }
         #claimTable th, #claimTable td {
-            padding: 3px 2px;
+            padding: 2px 1px;
             overflow-wrap: anywhere;
         }
         #claimTable input, #claimTable select {
             min-width: 0;
-            padding: 3px 1px;
-            font-size: 10px;
+            padding: 2px 0;
+            font-size: 9px;
         }
-        .col-sno { width: 22px; }
-        .col-cat { width: 82px; }
-        .col-amt { width: 54px; }
-        .col-narrow { width: 27px; }
-        .col-action { width: 24px; }
-        .spacer { width: 4px; } 
-        
+        .col-sno { width: 16px; }
+        .col-cat { width: 58px; }
+        .col-amt { width: 45px; }
+        .col-narrow { width: 21px; }
+        .col-action { width: 18px; }
+        .spacer { width: 2px; }
+
+        /* PDF-only layout: stack the lower tables vertically instead of
+           placing three wide tables side-by-side, which caused left clipping. */
+        #calculatorContainer.pdf-export {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+            overflow: visible !important;
+        }
+        #calculatorContainer.pdf-export .header-container {
+            width: 100% !important;
+            box-sizing: border-box !important;
+            flex-wrap: wrap;
+        }
+        #calculatorContainer.pdf-export #claimTable {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        #calculatorContainer.pdf-export .bottom-sections {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        #calculatorContainer.pdf-export .bottom-sections > table {
+            display: table !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 12px 0 !important;
+            table-layout: fixed;
+            page-break-inside: auto !important;
+        }
+        #calculatorContainer.pdf-export .bottom-sections tr {
+            page-break-inside: avoid !important;
+        }
+        #calculatorContainer.pdf-export #summaryTable,
+        #calculatorContainer.pdf-export #gstBreakupTable,
+        #calculatorContainer.pdf-export #claimParticularsTable,
+        #calculatorContainer.pdf-export #nonStdSummaryTable,
+        #calculatorContainer.pdf-export #nonStdGstBreakupTable {
+            width: 100% !important;
+        }
+
         select, input {
             width: 100%;
             padding: 4px;
@@ -232,6 +275,15 @@
                 color-adjust: exact;
             }
         }
+
+        /* Final high-specificity overrides for the PDF capture. */
+        #calculatorContainer.pdf-export #claimTable .col-sno { width: 16px !important; }
+        #calculatorContainer.pdf-export #claimTable .col-cat { width: 58px !important; }
+        #calculatorContainer.pdf-export #claimTable .col-amt { width: 45px !important; }
+        #calculatorContainer.pdf-export #claimTable .col-narrow { width: 21px !important; }
+        #calculatorContainer.pdf-export #claimTable .col-action { width: 18px !important; }
+        #calculatorContainer.pdf-export #claimTable .spacer { width: 2px !important; min-width: 2px !important; }
+        #calculatorContainer.pdf-export .no-print { display: none !important; }
     </style>
 </head>
 <body>
@@ -777,24 +829,29 @@
             window.scrollTo(0, 0);
 
             const element = document.getElementById('calculatorContainer');
+            element.classList.add('pdf-export');
 
             const opt = {
-                // Extra left margin (15 mm) leaves room for filing/punch holes.
-                // Smaller right margin preserves usable width on A4 portrait.
-                margin:       [8, 5, 8, 15],
+                // 18 mm left margin is reserved for punching/file binding.
+                margin:       [8, 7, 8, 18],
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  {
                     scale: 2,
                     scrollX: 0,
                     scrollY: 0,
-                    windowWidth: element.scrollWidth
+                    windowWidth: document.documentElement.clientWidth,
+                    useCORS: true
                 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: 'css', avoid: ['tr', '.bottom-sections'] }
+                pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr'] }
             };
 
-            html2pdf().set(opt).from(element).save();
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.classList.remove('pdf-export');
+            }).catch(() => {
+                element.classList.remove('pdf-export');
+            });
         }
 
         function calculateAll() {
