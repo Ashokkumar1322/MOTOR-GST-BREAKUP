@@ -761,25 +761,27 @@
 
         // Generate dynamic file name helper function
         function getExportFilename() {
-            let fileNo = document.getElementById('fileNoInput').value.trim();
-            let vehicleNo = document.getElementById('vehicleNoInput').value.trim();
-            
-            let parts = [];
-            if(fileNo) parts.push(fileNo);
-            if(vehicleNo) parts.push(vehicleNo);
-            
-            let filename = parts.join('_').replace(/[^a-zA-Z0-9_-]/g, '');
-            return filename ? filename : "Claim_Calculation";
+            const fileNo = document.getElementById('fileNoInput').value.trim();
+            const vehicleNo = document.getElementById('vehicleNoInput').value.trim();
+
+            const parts = [];
+            if (fileNo) parts.push('FILE NO ' + fileNo);
+            if (vehicleNo) parts.push('VEHICLE NUMBER ' + vehicleNo);
+
+            // Keep identifying labels and values; replace characters unsafe in filenames.
+            const filename = parts.join(' - ').replace(/[\\\\/:*?"<>|]/g, '-').replace(/\\s+/g, ' ').trim();
+            return filename || 'Claim_Calculation';
         }
 
-        // Export PDF in A4 portrait format.
         function exportToPdf() {
             window.scrollTo(0, 0);
 
             const element = document.getElementById('calculatorContainer');
 
             const opt = {
-                margin:       4,
+                // Extra left margin (15 mm) leaves room for filing/punch holes.
+                // Smaller right margin preserves usable width on A4 portrait.
+                margin:       [8, 5, 8, 15],
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  {
