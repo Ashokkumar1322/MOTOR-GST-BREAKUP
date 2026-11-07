@@ -125,9 +125,49 @@
         /* Layout for Bottom Section */
         .bottom-sections {
             display: flex;
-            gap: 20px;
+            flex-wrap: wrap;
+            gap: 10px 12px;
             align-items: flex-start;
-            margin-top: 10px;
+            margin-top: 8px;
+        }
+
+        /* Portrait page: arrange the standard working as one horizontal pair,
+           then the non-standard working as a second horizontal pair.
+           Claim Particulars is the only full-width section below both pairs. */
+        #summaryTable {
+            order: 1;
+            flex: 0 0 calc(50% - 6px);
+            width: calc(50% - 6px) !important;
+            max-width: calc(50% - 6px);
+            box-sizing: border-box;
+        }
+        #gstBreakupTable {
+            order: 2;
+            flex: 0 0 calc(50% - 6px);
+            width: calc(50% - 6px) !important;
+            max-width: calc(50% - 6px);
+            box-sizing: border-box;
+        }
+        #nonStdSummaryTable {
+            order: 3;
+            flex: 0 0 calc(50% - 6px);
+            width: calc(50% - 6px) !important;
+            max-width: calc(50% - 6px);
+            box-sizing: border-box;
+        }
+        #nonStdGstBreakupTable {
+            order: 4;
+            flex: 0 0 calc(50% - 6px);
+            width: calc(50% - 6px) !important;
+            max-width: calc(50% - 6px);
+            box-sizing: border-box;
+        }
+        #claimParticularsTable {
+            order: 5;
+            flex: 0 0 100%;
+            width: 100%;
+            max-width: 100%;
+            margin-top: 2px;
         }
 
         /* Summary Section Formatting */
@@ -227,12 +267,38 @@
         .final-amount-header {
             background-color: #004085 !important;
             color: #ffffff !important;
-            font-family: 'Arial Black', Impact, sans-serif !important;
-            font-size: 15px !important;
+            font-family: Arial, sans-serif !important;
+            font-size: 12px !important;
             text-transform: uppercase;
-            padding: 10px !important;
-            letter-spacing: 1px;
+            padding: 6px !important;
+            letter-spacing: 0;
             border: 2px solid #002752 !important;
+        }
+
+
+        /* Consistent compact heading size, matching the top table header */
+        #summaryTable th,
+        #gstBreakupTable th,
+        #claimParticularsTable th,
+        #nonStdSummaryTable th,
+        #nonStdGstBreakupTable th {
+            font-size: 12px !important;
+            line-height: 1.15;
+            padding: 5px 4px !important;
+        }
+        #summaryTable td,
+        #nonStdSummaryTable td {
+            padding: 4px;
+        }
+        #gstBreakupTable td,
+        #nonStdGstBreakupTable td {
+            padding: 3px 4px;
+            font-size: 11px;
+        }
+        #summaryTable tr td[colspan="2"],
+        #nonStdSummaryTable tr td[colspan="2"] {
+            padding-top: 4px;
+            padding-bottom: 4px;
         }
 
         /* Hide specific elements ONLY during the PDF/Print export */
@@ -351,17 +417,17 @@
                     <td>
                         <select class="dep-input">
                             <option value="0" selected>0%</option>
-                            <option value="0">&lt;= 6m = 0%</option>
-                            <option value="5">&gt; 6m, &lt;= 1y = 5%</option>
-                            <option value="10">&gt; 1y, &lt;= 2y = 10%</option>
-                            <option value="15">&gt; 2y, &lt;= 3y = 15%</option>
-                            <option value="25">&gt; 3y, &lt;= 4y = 25%</option>
-                            <option value="35">&gt; 4y, &lt;= 5y = 35%</option>
-                            <option value="40">&gt; 5y, &lt;= 10y = 40%</option>
-                            <option value="50">&gt; 10y = 50%</option>
-                            <option value="0">Glass = 0%</option>
-                            <option value="30">Fibre Glass = 30%</option>
-                            <option value="50">Rubber/Nylon... = 50%</option>
+                            <option value="0">0% = &lt;= 6m</option>
+                            <option value="5">5% = &gt; 6m, &lt;= 1y</option>
+                            <option value="10">10% = &gt; 1y, &lt;= 2y</option>
+                            <option value="15">15% = &gt; 2y, &lt;= 3y</option>
+                            <option value="25">25% = &gt; 3y, &lt;= 4y</option>
+                            <option value="35">35% = &gt; 4y, &lt;= 5y</option>
+                            <option value="40">40% = &gt; 5y, &lt;= 10y</option>
+                            <option value="50">50% = &gt; 10y</option>
+                            <option value="0">0% = Glass</option>
+                            <option value="30">30% = Fibre Glass</option>
+                            <option value="50">50% = Rubber/Nylon...</option>
                         </select>
                     </td>
                     <td class="col-gst"><input type="number" class="gst-input" value="18"></td>
@@ -1284,17 +1350,17 @@
                 : `<td>
                     <select class="dep-input">
                         <option value="0" selected>0%</option>
-                        <option value="0">&lt;= 6m = 0%</option>
-                        <option value="5">&gt; 6m, &lt;= 1y = 5%</option>
-                        <option value="10">&gt; 1y, &lt;= 2y = 10%</option>
-                        <option value="15">&gt; 2y, &lt;= 3y = 15%</option>
-                        <option value="25">&gt; 3y, &lt;= 4y = 25%</option>
-                        <option value="35">&gt; 4y, &lt;= 5y = 35%</option>
-                        <option value="40">&gt; 5y, &lt;= 10y = 40%</option>
-                        <option value="50">&gt; 10y = 50%</option>
-                        <option value="0">Glass = 0%</option>
-                        <option value="30">Fibre Glass = 30%</option>
-                        <option value="50">Rubber/Nylon... = 50%</option>
+                        <option value="0">0% = &lt;= 6m</option>
+                        <option value="5">5% = &gt; 6m, &lt;= 1y</option>
+                        <option value="10">10% = &gt; 1y, &lt;= 2y</option>
+                        <option value="15">15% = &gt; 2y, &lt;= 3y</option>
+                        <option value="25">25% = &gt; 3y, &lt;= 4y</option>
+                        <option value="35">35% = &gt; 4y, &lt;= 5y</option>
+                        <option value="40">40% = &gt; 5y, &lt;= 10y</option>
+                        <option value="50">50% = &gt; 10y</option>
+                        <option value="0">0% = Glass</option>
+                        <option value="30">30% = Fibre Glass</option>
+                        <option value="50">50% = Rubber/Nylon...</option>
                     </select>
                    </td>`;
 
