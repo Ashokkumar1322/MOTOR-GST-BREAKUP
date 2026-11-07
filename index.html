@@ -18,8 +18,10 @@
         /* New Header Layout */
         .header-container {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start;
             align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
             margin-bottom: 15px;
         }
         .header-container h2 {
@@ -76,34 +78,37 @@
             font-size: 9px !important;
             line-height: 1.15 !important;
         }
-        /* Column proportions across the available printable width. */
+        /* Top claim table: compact narrow columns and reduce excess width in amount columns. */
         #calculatorContainer.pdf-export #claimTable th:nth-child(1),
         #calculatorContainer.pdf-export #claimTable td:nth-child(1) { width: 3% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(2),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(2) { width: 9% !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(2) { width: 10% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(3),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(3) { width: 12% !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(3) { width: 14% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(4),
         #calculatorContainer.pdf-export #claimTable td:nth-child(4) { width: 7% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(5),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(5) { width: 4% !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(5) { width: 2% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(6),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(6) { width: 6% !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(6) { width: 8% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(7),
         #calculatorContainer.pdf-export #claimTable td:nth-child(7) { width: 1% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(8),
         #calculatorContainer.pdf-export #claimTable td:nth-child(8) { width: 12% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(9),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(9) { width: 7% !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(9) { width: 6% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(10),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(10) { width: 8% !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(10) { width: 7% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(11),
         #calculatorContainer.pdf-export #claimTable td:nth-child(11) { width: 10% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(12),
         #calculatorContainer.pdf-export #claimTable td:nth-child(12) { width: 5% !important; }
         #calculatorContainer.pdf-export #claimTable th:nth-child(13),
-        #calculatorContainer.pdf-export #claimTable td:nth-child(13) { width: 8.5% !important; }
+        #calculatorContainer.pdf-export #claimTable td:nth-child(13) { width: 8% !important; }
 
+        /* Same GST and IMT proportions in the live calculator, so N/Y remains visible on screen. */
+        #claimTable th:nth-child(5), #claimTable td:nth-child(5) { width: 2% !important; }
+        #claimTable th:nth-child(6), #claimTable td:nth-child(6) { width: 8% !important; }
         /* Print depreciation dropdown left-aligned so the percentage is visible first. */
         #calculatorContainer.pdf-export #claimTable .dep-select {
             text-align: left !important;
@@ -375,6 +380,32 @@
             font-size: 11px !important;
             padding: 6px 4px !important;
             letter-spacing: 0 !important;
+        }
+\n
+        /* GST breakup tables: compact description column and a fitted amount column. */
+        #calculatorContainer.pdf-export #gstBreakupTable,
+        #calculatorContainer.pdf-export #nonStdGstBreakupTable {
+            table-layout: auto !important;
+            width: max-content !important;
+            max-width: 100% !important;
+        }
+        #calculatorContainer.pdf-export #gstBreakupTable th:first-child,
+        #calculatorContainer.pdf-export #gstBreakupTable td:first-child,
+        #calculatorContainer.pdf-export #nonStdGstBreakupTable th:first-child,
+        #calculatorContainer.pdf-export #nonStdGstBreakupTable td:first-child {
+            width: 180px !important;
+            white-space: nowrap !important;
+        }
+        #calculatorContainer.pdf-export #gstBreakupTable th:nth-child(2),
+        #calculatorContainer.pdf-export #gstBreakupTable td:nth-child(2),
+        #calculatorContainer.pdf-export #nonStdGstBreakupTable th:nth-child(2),
+        #calculatorContainer.pdf-export #nonStdGstBreakupTable td:nth-child(2) {
+            width: 95px !important;
+            white-space: nowrap !important;
+        }
+        #calculatorContainer.pdf-export #nonStdGstBreakupTable > thead th {
+            white-space: nowrap !important;
+            font-size: 11px !important;
         }
 \n    </style>
 </head>
@@ -918,27 +949,31 @@
         }
 
         function exportToPdf() {
+            if (typeof html2pdf !== 'function') {
+                alert('PDF export library could not be loaded. Please check your internet connection and try again.');
+                return;
+            }
+
             window.scrollTo(0, 0);
 
             const liveElement = document.getElementById('calculatorContainer');
             const exportElement = liveElement.cloneNode(true);
             exportElement.classList.add('pdf-export');
+            exportElement.style.cssText += ';position:absolute;left:-10000px;top:0;width:185mm;max-width:185mm;background:#fff;';
 
-            // Reorder only the PDF copy: standard summary + GST breakup,
-            // then any active non-standard working, then Claim Particulars.
             const bottom = exportElement.querySelector('.bottom-sections');
             const claimParticulars = exportElement.querySelector('#claimParticularsTable');
             const nonStdSummary = exportElement.querySelector('#nonStdSummaryTable');
             const nonStdGst = exportElement.querySelector('#nonStdGstBreakupTable');
 
-            if (claimParticulars && nonStdSummary && nonStdSummary.style.display !== 'none') {
+            if (claimParticulars && bottom && nonStdSummary && nonStdSummary.style.display !== 'none') {
                 bottom.insertBefore(nonStdSummary, claimParticulars);
             }
-            if (claimParticulars && nonStdGst && nonStdGst.style.display !== 'none') {
+            if (claimParticulars && bottom && nonStdGst && nonStdGst.style.display !== 'none') {
                 bottom.insertBefore(nonStdGst, claimParticulars);
             }
 
-            // The live form's current input values are copied into the export clone.
+            // Copy current values and selected options into the PDF clone.
             const liveFields = liveElement.querySelectorAll('input, select, textarea');
             const exportFields = exportElement.querySelectorAll('input, select, textarea');
             liveFields.forEach((field, index) => {
@@ -949,8 +984,7 @@
                 } else {
                     copy.value = field.value;
                 }
-                // Show the selected depreciation percentage and description clearly in the PDF.
-                if (field.classList && field.classList.contains('dep-input')) {
+                if (field.tagName === 'SELECT' && field.classList.contains('dep-input')) {
                     const selectedText = field.options[field.selectedIndex]?.text || field.value;
                     const printed = document.createElement('span');
                     printed.textContent = selectedText;
@@ -959,9 +993,10 @@
                 }
             });
 
+            document.body.appendChild(exportElement);
+
             const opt = {
-                // html2pdf margin order is [top, left, bottom, right].
-                // The 20 mm filing margin is deliberately on the LEFT.
+                // html2pdf margin order: [top, left, bottom, right].
                 margin:       [8, 20, 8, 5],
                 filename:     getExportFilename() + '.pdf',
                 image:        { type: 'jpeg', quality: 1 },
@@ -969,14 +1004,20 @@
                     scale: 2,
                     scrollX: 0,
                     scrollY: 0,
-                    windowWidth: 1200,
-                    useCORS: true
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
                 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak:    { mode: ['css', 'legacy'], avoid: ['tr'] }
             };
 
-            html2pdf().set(opt).from(exportElement).save();
+            html2pdf().set(opt).from(exportElement).save()
+                .then(() => exportElement.remove())
+                .catch(error => {
+                    exportElement.remove();
+                    console.error('PDF export failed:', error);
+                    alert('PDF export failed. Please try again.');
+                });
         }
 
         function calculateAll() {
