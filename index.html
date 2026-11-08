@@ -934,7 +934,9 @@
                 document.getElementById(nonStdActive ? 'nsTowing' : 'sumTowing').value
             ) || 0);
             const towingLine = document.getElementById('statementTowingLine');
-            towingLine.style.display = towingAmount > 0 ? 'inline' : 'none';
+            // Mention towing as a separate payment only when the towing
+            // recipient differs from the main claim recipient.
+            towingLine.style.display = (towingAmount > 0 && mainPayee !== towingPayee) ? 'inline' : 'none';
             document.getElementById('statementTowingAmount').textContent = towingAmount.toLocaleString('en-IN');
             document.getElementById('statementTowingPayee').textContent =
                 towingPayee === 'insured' ? 'Insured' : 'Repairer';
