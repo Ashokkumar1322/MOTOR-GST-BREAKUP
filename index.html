@@ -723,11 +723,8 @@
                     </tr>
                     <tr>
                         <td class="highlight-label" style="text-align: left; font-weight: bold;">PAYMENT TO</td>
-                        <td>
-                            <select id="mainPaymentTo" class="highlight-select" style="text-align: left;">
-                                <option value="repairer" selected>Repairer</option>
-                                <option value="insured">Insured</option>
-                            </select>
+                        <td style="text-align: center; font-weight: bold; color: #b71c1c;">
+                            <span id="particularsPaymentTo">Repairer</span>
                         </td>
                     </tr>
                     <tr>
@@ -767,7 +764,7 @@
                             Claim papers are in order. Section 64vb has been complied.<br>
                             The claim is approved for Rs. <input type="number" id="statementClaimApproved" style="width: 100px; display: inline-block;" placeholder="0" readonly>.
                             To be paid to the <strong id="statementPayee">Repairer</strong>.<br>
-                            <span id="statementTdsLine" style="display: none;">Less TDS Rs. <strong id="statementTdsAmount">0</strong>.<br></span>
+                            <span id="statementTdsLine" style="display: none;">Less Approx TDS Rs. <strong id="statementTdsAmount">0</strong>.<br></span>
                             <span id="statementTowingLine" style="display: none;">Add Towing Rs. <strong id="statementTowingAmount">0</strong> to be paid to the <strong id="statementTowingPayee">Insured</strong>.<br></span>
                             Survey / Inves / Legal Fee is approved for Rs. <input type="number" id="statementFeesApproved" style="width: 100px; display: inline-block;" placeholder="0" readonly>.
                         </td>
@@ -965,14 +962,8 @@
                 calculateAll();
             }
 
-            // Keep the claim-payment selectors synchronized. The summary dropdown
-            // is the primary control; the particulars dropdown mirrors it.
+            // CLAIM TO BE PAID TO is the single source for the payment recipient.
             if (e.target.id === 'claimPaymentTo') {
-                document.getElementById('mainPaymentTo').value = e.target.value;
-                calculateAll();
-            }
-            if (e.target.id === 'mainPaymentTo') {
-                document.getElementById('claimPaymentTo').value = e.target.value;
                 calculateAll();
             }
         });
@@ -1036,6 +1027,15 @@
             let mainPayee = document.getElementById('claimPaymentTo').value;
             let towingPayee = document.getElementById('towingPayee').value;
             const towingIncludedInGrandTotal = mainPayee === towingPayee;
+            const claimRecipientLabel = mainPayee === 'insured' ? 'Insured' : 'Repairer';
+            const towingRecipientLabel = towingPayee === 'insured' ? 'Insured' : 'Repairer';
+            document.getElementById('particularsPaymentTo').textContent = claimRecipientLabel;
+            document.querySelector('#rowFinalToRepairer .summary-label').textContent = 'To-' + claimRecipientLabel;
+            document.querySelector('#rowFinalToInsured .summary-label').textContent = 'To-' + claimRecipientLabel;
+            document.querySelector('#nsRowFinalToRepairer .summary-label').textContent = 'To-' + claimRecipientLabel;
+            document.querySelector('#nsRowFinalToInsured .summary-label').textContent = 'To-' + claimRecipientLabel;
+            document.querySelector('#rowFinalToInsuredTowing .summary-label').textContent = 'Towing - To ' + towingRecipientLabel;
+            document.querySelector('#nsRowFinalToInsuredTowing .summary-label').textContent = 'Towing - To ' + towingRecipientLabel;
             let finalGrandTotal = Math.round(sumTotal + (towingIncludedInGrandTotal ? towing : 0));
             
             let salvage = Math.round(parseFloat(document.getElementById('sumSalvage').value) || 0);
