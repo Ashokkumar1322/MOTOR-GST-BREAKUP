@@ -571,6 +571,15 @@
                         <td><input type="number" id="sumTotal" class="readonly-cell summary-input" style="font-size: 14px;" readonly placeholder="0"></td>
                     </tr>
                     <tr>
+                        <td class="summary-label">CLAIM TO BE PAID TO</td>
+                        <td>
+                            <select id="claimPaymentTo" class="highlight-select" style="font-size: 12px; padding: 4px !important;">
+                                <option value="insured">Insured</option>
+                                <option value="repairer" selected>Repairer</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="summary-label">ADD TOWING</td>
                         <td>
                             <div style="display: flex; gap: 5px;">
@@ -647,11 +656,11 @@
                         <td><input type="number" id="finalTds" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                     <tr id="rowFinalToInsuredTowing">
-                        <td class="summary-label">To Insured (Towing)</td>
+                        <td class="summary-label">Towing - To-Insured / Repairer</td>
                         <td><input type="number" id="finalToInsuredTowing" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                     <tr id="rowFinalToInsured" style="display: none;">
-                        <td class="summary-label">To Insured</td>
+                        <td class="summary-label">To-Insured / Repairer</td>
                         <td><input type="number" id="finalToInsured" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                 </tbody>
@@ -754,10 +763,12 @@
                         <td><input type="date"></td>
                     </tr>
                     <tr>
-                        <td colspan="2" style="text-align: left; font-size: 11px; font-style: italic; background-color: #fdfdfd; line-height: 1.5;">
+                        <td colspan="2" style="text-align: left !important; vertical-align: top; font-size: 11px; font-style: italic; background-color: #fdfdfd; line-height: 1.5; padding-left: 8px;">
                             Claim papers are in order. Section 64vb has been complied.<br>
-                            The claim is approved for Rs. <input type="number" id="statementClaimApproved" style="width: 100px; display: inline-block;" placeholder="0" readonly>.<br>
-                            To be paid to the Insured / Repairer.<br>
+                            The claim is approved for Rs. <input type="number" id="statementClaimApproved" style="width: 100px; display: inline-block;" placeholder="0" readonly>.
+                            To be paid to the <strong id="statementPayee">Repairer</strong>.<br>
+                            <span id="statementTdsLine" style="display: none;">Less TDS Rs. <strong id="statementTdsAmount">0</strong>.<br></span>
+                            <span id="statementTowingLine" style="display: none;">Add Towing Rs. <strong id="statementTowingAmount">0</strong> to be paid to the <strong id="statementTowingPayee">Insured</strong>.<br></span>
                             Survey / Inves / Legal Fee is approved for Rs. <input type="number" id="statementFeesApproved" style="width: 100px; display: inline-block;" placeholder="0" readonly>.
                         </td>
                     </tr>
@@ -843,11 +854,11 @@
                         <td><input type="number" id="nsFinalTds" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                     <tr id="nsRowFinalToInsuredTowing">
-                        <td class="summary-label">To Insured (Towing)</td>
+                        <td class="summary-label">Towing - To-Insured / Repairer</td>
                         <td><input type="number" id="nsFinalToInsuredTowing" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                     <tr id="nsRowFinalToInsured" style="display: none;">
-                        <td class="summary-label">To Insured</td>
+                        <td class="summary-label">To-Insured / Repairer</td>
                         <td><input type="number" id="nsFinalToInsured" class="readonly-cell summary-input" readonly placeholder="0"></td>
                     </tr>
                 </tbody>
@@ -902,6 +913,34 @@
         function syncApprovedAmounts() {
             document.getElementById('statementClaimApproved').value = document.getElementById('claimApprovedInput').value;
             document.getElementById('statementFeesApproved').value = document.getElementById('feesApprovedInput').value;
+            syncSanctionStatement();
+        }
+
+        // Keep the sanctioning statement aligned with PAYMENT TO and the
+        // standard / non-standard final working currently in use.
+        function syncSanctionStatement() {
+            const mainPayee = document.getElementById('claimPaymentTo').value;
+            const towingPayee = document.getElementById('towingPayee').value;
+            const nonStdActive = document.getElementById('nonStdSummaryTable').style.display !== 'none';
+
+            const payeeText = mainPayee === 'insured' ? 'Insured' : 'Repairer';
+            document.getElementById('statementPayee').textContent = payeeText;
+
+            const tdsAmount = Math.round(parseFloat(
+                document.getElementById(nonStdActive ? 'nsTdsAmt' : 'sumTdsAmt').value
+            ) || 0);
+            const tdsLine = document.getElementById('statementTdsLine');
+            tdsLine.style.display = mainPayee === 'repairer' && tdsAmount > 0 ? 'inline' : 'none';
+            document.getElementById('statementTdsAmount').textContent = tdsAmount.toLocaleString('en-IN');
+
+            const towingAmount = Math.round(parseFloat(
+                document.getElementById(nonStdActive ? 'nsTowing' : 'sumTowing').value
+            ) || 0);
+            const towingLine = document.getElementById('statementTowingLine');
+            towingLine.style.display = towingAmount > 0 ? 'inline' : 'none';
+            document.getElementById('statementTowingAmount').textContent = towingAmount.toLocaleString('en-IN');
+            document.getElementById('statementTowingPayee').textContent =
+                towingPayee === 'insured' ? 'Insured' : 'Repairer';
         }
         document.getElementById('claimApprovedInput').addEventListener('input', syncApprovedAmounts);
         document.getElementById('feesApprovedInput').addEventListener('input', syncApprovedAmounts);
@@ -923,10 +962,17 @@
             // Sync Towing Dropdowns
             if (e.target.id === 'towingPayee') {
                 document.getElementById('nsTowingPayee').value = e.target.value;
+                calculateAll();
             }
 
-            // Recalculate on Main Payment To toggle
+            // Keep the claim-payment selectors synchronized. The summary dropdown
+            // is the primary control; the particulars dropdown mirrors it.
+            if (e.target.id === 'claimPaymentTo') {
+                document.getElementById('mainPaymentTo').value = e.target.value;
+                calculateAll();
+            }
             if (e.target.id === 'mainPaymentTo') {
+                document.getElementById('claimPaymentTo').value = e.target.value;
                 calculateAll();
             }
         });
@@ -987,8 +1033,10 @@
             
             let towingUnrounded = parseFloat(document.getElementById('sumTowing').value) || 0;
             let towing = Math.round(towingUnrounded);
-            
-            let finalGrandTotal = Math.round(sumTotal + towing);
+            let mainPayee = document.getElementById('claimPaymentTo').value;
+            let towingPayee = document.getElementById('towingPayee').value;
+            const towingIncludedInGrandTotal = mainPayee === towingPayee;
+            let finalGrandTotal = Math.round(sumTotal + (towingIncludedInGrandTotal ? towing : 0));
             
             let salvage = Math.round(parseFloat(document.getElementById('sumSalvage').value) || 0);
             let excess = Math.round(parseFloat(document.getElementById('sumExcess').value) || 0);
@@ -1038,9 +1086,6 @@
             document.getElementById('nsTowingPayee').value = document.getElementById('towingPayee').value;
 
             // --- FINAL NET AMOUNT TO BE PAID (STANDARD CALC) ---
-            let mainPayee = document.getElementById('mainPaymentTo').value;
-            let towingPayee = document.getElementById('towingPayee').value;
-            
             let stdFinalToInsuredTowing = (towingPayee === 'insured') ? towing : 0;
             let stdFinalToInsured = 0;
             let stdFinalToRepairer = netAmount;
@@ -1049,16 +1094,18 @@
                 // Show Repairer rows, Hide Insured row
                 document.getElementById('rowFinalToRepairer').style.display = 'table-row';
                 document.getElementById('rowFinalTds').style.display = 'table-row';
-                document.getElementById('rowFinalToInsuredTowing').style.display = 'table-row';
+                document.getElementById('rowFinalToInsuredTowing').style.display = 'none';
                 document.getElementById('rowFinalToInsured').style.display = 'none';
                 
                 document.getElementById('nsRowFinalToRepairer').style.display = 'table-row';
                 document.getElementById('nsRowFinalTds').style.display = 'table-row';
-                document.getElementById('nsRowFinalToInsuredTowing').style.display = 'table-row';
+                document.getElementById('nsRowFinalToInsuredTowing').style.display = 'none';
                 document.getElementById('nsRowFinalToInsured').style.display = 'none';
 
+                // When towing is payable to the insured, it is outside the
+                // repairer's claim payment. When payable to repairer, it is included.
                 if (towingPayee === 'insured') {
-                    stdFinalToRepairer -= towing;
+                    stdFinalToRepairer = Math.round(sumTotal - salvage - excess);
                 }
             } else {
                 // Show Insured row, Hide Repairer rows
@@ -1072,8 +1119,19 @@
                 document.getElementById('nsRowFinalToInsuredTowing').style.display = 'none';
                 document.getElementById('nsRowFinalToInsured').style.display = 'table-row';
                 
-                stdFinalToInsured = netAmount - (towingPayee === 'repairer' ? towing : 0);
+                stdFinalToInsured = towingPayee === 'repairer' ? Math.round(sumTotal - salvage - excess) : netAmount;
             }
+
+            // Show towing as a separate payment only when its recipient differs
+            // from the main claim recipient; otherwise it is included in that payment.
+            const towingIsSeparatePayment = towing > 0 && mainPayee !== towingPayee;
+            document.getElementById('rowFinalToInsuredTowing').style.display = towingIsSeparatePayment ? 'table-row' : 'none';
+            document.getElementById('nsRowFinalToInsuredTowing').style.display = towingIsSeparatePayment ? 'table-row' : 'none';
+            document.querySelector('#rowFinalToInsuredTowing .summary-label').textContent =
+                'Towing - To ' + (towingPayee === 'insured' ? 'Insured' : 'Repairer');
+            document.querySelector('#nsRowFinalToInsuredTowing .summary-label').textContent =
+                'Towing - To ' + (towingPayee === 'insured' ? 'Insured' : 'Repairer');
+            stdFinalToInsuredTowing = towingIsSeparatePayment ? towing : 0;
 
             // Populate the standard rows
             document.getElementById('finalToRepairer').value = Math.round(stdFinalToRepairer);
@@ -1093,7 +1151,7 @@
             
             let targetGrandTotal = 0;
             let isNonStdActive = false;
-            let exactOriginalGrandTotal = grandTotals.total + towingUnrounded; 
+            let exactOriginalGrandTotal = grandTotals.total + (towingIncludedInGrandTotal ? towingUnrounded : 0); 
             
             if (isPctMode && parseFloat(nonStdPctInput.value) > 0) {
                 targetGrandTotal = exactOriginalGrandTotal * (parseFloat(nonStdPctInput.value) / 100);
@@ -1173,7 +1231,8 @@
                     nsAutoTdsPercent = 2;
                 }
                 let nsTdsAmt = Math.round(nsTdsBase * (nsAutoTdsPercent / 100));
-                let nsNetAmountVal = Math.round(nsTotalAmt + nsTowing - salvage - excess);
+                let nsGrandTotalVal = Math.round(nsTotalAmt + (towingIncludedInGrandTotal ? nsTowing : 0));
+                let nsNetAmountVal = Math.round(nsGrandTotalVal - salvage - excess);
 
                 // Populate Non-Standard Summary Board
                 document.getElementById('nsAmtBeforeGst').value = Math.round(nsAmtBeforeGst);
@@ -1182,7 +1241,7 @@
                 document.getElementById('nsTowing').value = Math.round(nsTowing);
                 
                 // nsGrandTotal will now perfectly match the targetGrandTotal (rounding errors aside)
-                document.getElementById('nsGrandTotal').value = Math.round(nsTotalAmt + nsTowing);
+                document.getElementById('nsGrandTotal').value = nsGrandTotalVal;
                 
                 document.getElementById('nsSalvage').value = salvage;
                 document.getElementById('nsExcess').value = excess;
@@ -1191,16 +1250,18 @@
                 document.getElementById('nsTdsAmt').value = Math.round(nsTdsAmt);
                 
                 // --- FINAL NET AMOUNT TO BE PAID (NON-STANDARD CALC) ---
-                let nsFinalToInsuredTowing = (towingPayee === 'insured') ? Math.round(nsTowing) : 0;
+                let nsFinalToInsuredTowing = (mainPayee !== towingPayee) ? Math.round(nsTowing) : 0;
                 let nsFinalToInsured = 0;
                 let nsFinalToRepairer = nsNetAmountVal;
 
                 if (mainPayee === 'repairer') {
                     if (towingPayee === 'insured') {
-                        nsFinalToRepairer -= Math.round(nsTowing);
+                        nsFinalToRepairer = Math.round(nsTotalAmt - salvage - excess);
                     }
                 } else {
-                    nsFinalToInsured = nsNetAmountVal - (towingPayee === 'repairer' ? Math.round(nsTowing) : 0);
+                    nsFinalToInsured = towingPayee === 'repairer'
+                        ? Math.round(nsTotalAmt - salvage - excess)
+                        : nsNetAmountVal;
                 }
 
                 // Populating the Non-Std rows
@@ -1216,6 +1277,8 @@
                 nsSummaryTable.style.display = 'none';
                 nsGstBreakupTable.style.display = 'none';
             }
+
+            syncSanctionStatement();
         }
 
         // HIDDEN DECIMALS: Updated processRow to round displayed values to nearest whole number
