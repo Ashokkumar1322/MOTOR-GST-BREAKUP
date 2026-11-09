@@ -71,15 +71,15 @@
             font-size: 10px;
         }
         .col-sno { width: 18px; } /* S.No needs only two digits */
-        .col-cat { width: 82px; }
-        .col-amt { width: 52px; } /* small increase so full figures remain visible */
+        .col-cat { width: 88px; }
+        .col-amt { width: 58px; } /* small increase so full figures remain visible */
         .col-narrow { width: 27px; }
-        .col-dep { width: 37px; } /* extra room for percentage and dropdown arrow */
-        .col-gst { width: 25px; } /* compact GST %: only two digits */
-        .col-imt { width: 27px; } /* keep N/Y compact */
-        .col-calcamt { width: 37px; } /* tiny increase for full amount digits */
+        .col-dep { width: 40px; } /* extra room for percentage and dropdown arrow */
+        .col-gst { width: 28px; } /* compact GST %: only two digits */
+        .col-imt { width: 30px; } /* keep N/Y compact */
+        .col-calcamt { width: 42px; } /* tiny increase for full amount digits */
         .col-action { width: 24px; }
-        .spacer { width: 4px; } 
+        /* Spacer column removed to join the input and calculation tables. */ 
         
         select, input {
             width: 100%;
@@ -90,12 +90,6 @@
         }
         select { text-align: left; }
         
-        .spacer {
-            width: 8px;
-            border-top: none;
-            border-bottom: none;
-            background-color: #fff;
-        }
         .readonly-cell {
             background-color: #e9ecef;
             cursor: not-allowed;
@@ -336,7 +330,7 @@
         @page {
             size: A4 portrait;
             /* Extra left margin reserved for file punching */
-            margin: 4mm 4mm 4mm 12mm;
+            margin: 4mm 2mm 4mm 12mm;
         }
 
         @media print {
@@ -427,7 +421,6 @@
                     <th class="col-dep">DEP %</th>
                     <th class="col-gst">GST<br>%</th>
                     <th class="col-imt">IMT 23<br>N/Y</th>
-                    <th class="spacer"></th>
                     <th class="col-amt">Assessed-<br>Before Dep</th>
                     <th class="col-calcamt">DEP AMT</th>
                     <th class="col-calcamt">IMT 23<br>DEP AMT</th>
@@ -457,7 +450,6 @@
                             <option value="Y">Y</option>
                         </select>
                     </td>
-                    <td class="spacer"></td>
                     <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0"></td>
@@ -472,7 +464,6 @@
                     <td></td>
                     <td style="text-align: left;">LABOUR TOTAL</td>
                     <td></td><td></td><td></td><td></td>
-                    <td class="spacer"></td>
                     <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0"></td>
@@ -512,7 +503,6 @@
                             <option value="Y">Y</option>
                         </select>
                     </td>
-                    <td class="spacer"></td>
                     <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0"></td>
@@ -527,7 +517,6 @@
                     <td></td>
                     <td style="text-align: left;">PARTS TOTAL</td>
                     <td></td><td></td><td></td><td></td>
-                    <td class="spacer"></td>
                     <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0"></td>
@@ -542,7 +531,6 @@
                     <td></td>
                     <td style="text-align: left;">GRAND TOTAL</td>
                     <td></td><td></td><td></td><td></td>
-                    <td class="spacer"></td>
                     <td><input type="number" class="t-assessed readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-dep readonly-cell" readonly placeholder="0"></td>
                     <td><input type="number" class="t-imt readonly-cell" readonly placeholder="0"></td>
@@ -919,6 +907,17 @@
             const mainPayee = document.getElementById('claimPaymentTo').value;
             const towingPayee = document.getElementById('towingPayee').value;
             const nonStdActive = document.getElementById('nonStdSummaryTable').style.display !== 'none';
+
+            // Approved claim amount: use the active Non-Std final payment amount
+            // when available; otherwise fall back to the standard NET AMOUNT.
+            const nonStdFinalId = mainPayee === 'repairer' ? 'nsFinalToRepairer' : 'nsFinalToInsured';
+            const nonStdFinalValue = nonStdActive
+                ? (parseFloat(document.getElementById(nonStdFinalId).value) || 0)
+                : 0;
+            const standardNetValue = parseFloat(document.getElementById('sumNetAmount').value) || 0;
+            const approvedClaimValue = nonStdFinalValue > 0 ? nonStdFinalValue : standardNetValue;
+            document.getElementById('claimApprovedInput').value = Math.round(approvedClaimValue);
+            document.getElementById('statementClaimApproved').value = Math.round(approvedClaimValue);
 
             const payeeText = mainPayee === 'insured' ? 'Insured' : 'Repairer';
             document.getElementById('statementPayee').textContent = payeeText;
@@ -1499,7 +1498,6 @@
                         <option value="Y">Y</option>
                     </select>
                 </td>
-                <td class="spacer"></td>
                 <td><input type="number" class="assessed-copy readonly-cell" readonly placeholder="0"></td>
                 <td><input type="number" class="dep-amt readonly-cell" readonly placeholder="0"></td>
                 <td><input type="number" class="imt-amt readonly-cell" readonly placeholder="0"></td>
