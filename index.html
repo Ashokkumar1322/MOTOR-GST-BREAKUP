@@ -287,18 +287,6 @@
             padding: 6px !important;
         }
 
-        /* Highlight for Final Net Amount Headers */
-        .final-amount-header {
-            background-color: #004085 !important;
-            color: #ffffff !important;
-            font-family: Arial, sans-serif !important;
-            font-size: 12px !important;
-            text-transform: uppercase;
-            padding: 6px !important;
-            letter-spacing: 0;
-            border: 2px solid #002752 !important;
-        }
-
 
         /* Consistent compact heading size, matching the top table header */
         #summaryTable th,
@@ -628,29 +616,6 @@
                         <td><input type="number" id="nonStdAmt" class="summary-input readonly-cell" placeholder="0" disabled></td>
                     </tr>
 
-                    <!-- Gap before Final Net Amount -->
-                    <tr><td colspan="2" style="border: none; height: 15px;"></td></tr>
-
-                    <!-- Final Net Amount Section (Standard) -->
-                    <tr>
-                        <th colspan="2" class="final-amount-header">Final Net Amount To Be Paid</th>
-                    </tr>
-                    <tr id="rowFinalToRepairer">
-                        <td class="summary-label">To Repairer (Before TDS)</td>
-                        <td><input type="number" id="finalToRepairer" class="readonly-cell summary-input" readonly placeholder="0"></td>
-                    </tr>
-                    <tr id="rowFinalTds">
-                        <td class="summary-label">TDS</td>
-                        <td><input type="number" id="finalTds" class="readonly-cell summary-input" readonly placeholder="0"></td>
-                    </tr>
-                    <tr id="rowFinalToInsuredTowing">
-                        <td class="summary-label">Towing - To-Insured / Repairer</td>
-                        <td><input type="number" id="finalToInsuredTowing" class="readonly-cell summary-input" readonly placeholder="0"></td>
-                    </tr>
-                    <tr id="rowFinalToInsured" style="display: none;">
-                        <td class="summary-label">To-Insured / Repairer</td>
-                        <td><input type="number" id="finalToInsured" class="readonly-cell summary-input" readonly placeholder="0"></td>
-                    </tr>
                 </tbody>
             </table>
 
@@ -707,7 +672,7 @@
                     </tr>
                     <tr>
                         <td style="text-align: left; font-weight: bold;">CLAIM APPROVED FOR Rs.</td>
-                        <td><input type="number" id="claimApprovedInput" placeholder="0"></td>
+                        <td><input type="text" id="claimApprovedInput" inputmode="numeric" placeholder="0"></td>
                     </tr>
                     <tr>
                         <td class="highlight-label" style="text-align: left; font-weight: bold;">PAYMENT TO</td>
@@ -717,7 +682,7 @@
                     </tr>
                     <tr>
                         <td style="text-align: left; font-weight: bold;">FEES APPROVED FOR Rs.</td>
-                        <td><input type="number" id="feesApprovedInput" placeholder="0"></td>
+                        <td><input type="text" id="feesApprovedInput" inputmode="numeric" placeholder="0"></td>
                     </tr>
                     <tr>
                         <td style="text-align: left; font-weight: bold;">64VB</td>
@@ -750,11 +715,11 @@
                     <tr>
                         <td colspan="2" style="text-align: left !important; vertical-align: top; font-size: 11px; font-style: italic; background-color: #fdfdfd; line-height: 1.5; padding-left: 8px;">
                             Claim papers are in order. Section 64vb has been complied.<br>
-                            The claim is approved for Rs. <input type="number" id="statementClaimApproved" style="width: 100px; display: inline-block;" placeholder="0" readonly>.
+                            The claim is approved for Rs. <input type="text" id="statementClaimApproved" style="width: 115px; display: inline-block;" placeholder="0" readonly>.
                             To be paid to the <strong id="statementPayee">Repairer</strong>.<br>
                             <span id="statementTdsLine" style="display: none;">Less Approx TDS Rs. <strong id="statementTdsAmount">0</strong>.<br></span>
                             <span id="statementTowingLine" style="display: none;">Add Towing Rs. <strong id="statementTowingAmount">0</strong> to be paid to the <strong id="statementTowingPayee">Insured</strong>.<br></span>
-                            Survey / Inves / Legal Fee is approved for Rs. <input type="number" id="statementFeesApproved" style="width: 100px; display: inline-block;" placeholder="0" readonly>.
+                            Survey / Inves / Legal Fee is approved for Rs. <input type="text" id="statementFeesApproved" style="width: 115px; display: inline-block;" placeholder="0" readonly>.
                         </td>
                     </tr>
                     <tr>
@@ -823,29 +788,6 @@
                         </td>
                     </tr>
                     
-                    <!-- Gap before Final Net Amount -->
-                    <tr><td colspan="2" style="border: none; height: 15px;"></td></tr>
-
-                    <!-- Final Net Amount Section (Non-Std) -->
-                    <tr>
-                        <th colspan="2" class="final-amount-header">Final Net Amount To Be Paid (Non-Std)</th>
-                    </tr>
-                    <tr id="nsRowFinalToRepairer">
-                        <td class="summary-label">To Repairer (Before TDS)</td>
-                        <td><input type="number" id="nsFinalToRepairer" class="readonly-cell summary-input" readonly placeholder="0"></td>
-                    </tr>
-                    <tr id="nsRowFinalTds">
-                        <td class="summary-label">TDS</td>
-                        <td><input type="number" id="nsFinalTds" class="readonly-cell summary-input" readonly placeholder="0"></td>
-                    </tr>
-                    <tr id="nsRowFinalToInsuredTowing">
-                        <td class="summary-label">Towing - To-Insured / Repairer</td>
-                        <td><input type="number" id="nsFinalToInsuredTowing" class="readonly-cell summary-input" readonly placeholder="0"></td>
-                    </tr>
-                    <tr id="nsRowFinalToInsured" style="display: none;">
-                        <td class="summary-label">To-Insured / Repairer</td>
-                        <td><input type="number" id="nsFinalToInsured" class="readonly-cell summary-input" readonly placeholder="0"></td>
-                    </tr>
                 </tbody>
             </table>
 
@@ -894,33 +836,37 @@
 
         document.getElementById('calculatorContainer').addEventListener('input', calculateAll);
 
-        // Keep the sanctioning statement amounts synchronized with the approved amounts above.
+        // Indian-number formatting for the approved claim and fee amounts.
+        function formatIndianAmount(value) {
+            const number = Number(String(value ?? '').replace(/,/g, '').trim());
+            return Number.isFinite(number) && String(value ?? '').trim() !== ''
+                ? Math.round(number).toLocaleString('en-IN')
+                : '';
+        }
+
         function syncApprovedAmounts() {
-            document.getElementById('statementClaimApproved').value = document.getElementById('claimApprovedInput').value;
-            document.getElementById('statementFeesApproved').value = document.getElementById('feesApprovedInput').value;
+            document.getElementById('statementFeesApproved').value =
+                formatIndianAmount(document.getElementById('feesApprovedInput').value);
             syncSanctionStatement();
         }
 
-        // Keep the sanctioning statement aligned with PAYMENT TO and the
-        // standard / non-standard final working currently in use.
+        // The approved claim amount is taken from Non-Std Final Working > NET AMOUNT
+        // whenever that working is active; otherwise it uses the standard NET AMOUNT.
         function syncSanctionStatement() {
             const mainPayee = document.getElementById('claimPaymentTo').value;
             const towingPayee = document.getElementById('towingPayee').value;
             const nonStdActive = document.getElementById('nonStdSummaryTable').style.display !== 'none';
+            const approvedSourceId = nonStdActive ? 'nsNetAmount' : 'sumNetAmount';
+            const approvedClaimValue = Math.round(parseFloat(document.getElementById(approvedSourceId).value) || 0);
+            const formattedClaimValue = formatIndianAmount(approvedClaimValue);
+            document.getElementById('claimApprovedInput').value = formattedClaimValue;
+            document.getElementById('statementClaimApproved').value = formattedClaimValue;
 
-            // Approved claim amount: use the active Non-Std final payment amount
-            // when available; otherwise fall back to the standard NET AMOUNT.
-            const nonStdFinalId = mainPayee === 'repairer' ? 'nsFinalToRepairer' : 'nsFinalToInsured';
-            const nonStdFinalValue = nonStdActive
-                ? (parseFloat(document.getElementById(nonStdFinalId).value) || 0)
-                : 0;
-            const standardNetValue = parseFloat(document.getElementById('sumNetAmount').value) || 0;
-            const approvedClaimValue = nonStdFinalValue > 0 ? nonStdFinalValue : standardNetValue;
-            document.getElementById('claimApprovedInput').value = Math.round(approvedClaimValue);
-            document.getElementById('statementClaimApproved').value = Math.round(approvedClaimValue);
+            const feesValue = formatIndianAmount(document.getElementById('feesApprovedInput').value);
+            document.getElementById('feesApprovedInput').value = feesValue;
+            document.getElementById('statementFeesApproved').value = feesValue;
 
-            const payeeText = mainPayee === 'insured' ? 'Insured' : 'Repairer';
-            document.getElementById('statementPayee').textContent = payeeText;
+            document.getElementById('statementPayee').textContent = mainPayee === 'insured' ? 'Insured' : 'Repairer';
 
             const tdsAmount = Math.round(parseFloat(
                 document.getElementById(nonStdActive ? 'nsTdsAmt' : 'sumTdsAmt').value
@@ -933,15 +879,15 @@
                 document.getElementById(nonStdActive ? 'nsTowing' : 'sumTowing').value
             ) || 0);
             const towingLine = document.getElementById('statementTowingLine');
-            // Mention towing as a separate payment only when the towing
-            // recipient differs from the main claim recipient.
             towingLine.style.display = (towingAmount > 0 && mainPayee !== towingPayee) ? 'inline' : 'none';
             document.getElementById('statementTowingAmount').textContent = towingAmount.toLocaleString('en-IN');
-            document.getElementById('statementTowingPayee').textContent =
-                towingPayee === 'insured' ? 'Insured' : 'Repairer';
+            document.getElementById('statementTowingPayee').textContent = towingPayee === 'insured' ? 'Insured' : 'Repairer';
         }
-        document.getElementById('claimApprovedInput').addEventListener('input', syncApprovedAmounts);
         document.getElementById('feesApprovedInput').addEventListener('input', syncApprovedAmounts);
+        document.getElementById('feesApprovedInput').addEventListener('blur', function() {
+            this.value = formatIndianAmount(this.value);
+            document.getElementById('statementFeesApproved').value = this.value;
+        });
         
         document.getElementById('calculatorContainer').addEventListener('change', function(e) {
             if (e.target.classList.contains('cat-select')) {
@@ -1031,12 +977,6 @@
             const claimRecipientLabel = mainPayee === 'insured' ? 'Insured' : 'Repairer';
             const towingRecipientLabel = towingPayee === 'insured' ? 'Insured' : 'Repairer';
             document.getElementById('particularsPaymentTo').textContent = claimRecipientLabel;
-            document.querySelector('#rowFinalToRepairer .summary-label').textContent = 'To-' + claimRecipientLabel;
-            document.querySelector('#rowFinalToInsured .summary-label').textContent = 'To-' + claimRecipientLabel;
-            document.querySelector('#nsRowFinalToRepairer .summary-label').textContent = 'To-' + claimRecipientLabel;
-            document.querySelector('#nsRowFinalToInsured .summary-label').textContent = 'To-' + claimRecipientLabel;
-            document.querySelector('#rowFinalToInsuredTowing .summary-label').textContent = 'Towing - To ' + towingRecipientLabel;
-            document.querySelector('#nsRowFinalToInsuredTowing .summary-label').textContent = 'Towing - To ' + towingRecipientLabel;
             let finalGrandTotal = Math.round(sumTotal + (towingIncludedInGrandTotal ? towing : 0));
             
             let salvage = Math.round(parseFloat(document.getElementById('sumSalvage').value) || 0);
@@ -1085,60 +1025,6 @@
 
             // Sync Non-Standard dropdown just in case
             document.getElementById('nsTowingPayee').value = document.getElementById('towingPayee').value;
-
-            // --- FINAL NET AMOUNT TO BE PAID (STANDARD CALC) ---
-            let stdFinalToInsuredTowing = (towingPayee === 'insured') ? towing : 0;
-            let stdFinalToInsured = 0;
-            let stdFinalToRepairer = netAmount;
-
-            if (mainPayee === 'repairer') {
-                // Show Repairer rows, Hide Insured row
-                document.getElementById('rowFinalToRepairer').style.display = 'table-row';
-                document.getElementById('rowFinalTds').style.display = 'table-row';
-                document.getElementById('rowFinalToInsuredTowing').style.display = 'none';
-                document.getElementById('rowFinalToInsured').style.display = 'none';
-                
-                document.getElementById('nsRowFinalToRepairer').style.display = 'table-row';
-                document.getElementById('nsRowFinalTds').style.display = 'table-row';
-                document.getElementById('nsRowFinalToInsuredTowing').style.display = 'none';
-                document.getElementById('nsRowFinalToInsured').style.display = 'none';
-
-                // When towing is payable to the insured, it is outside the
-                // repairer's claim payment. When payable to repairer, it is included.
-                if (towingPayee === 'insured') {
-                    stdFinalToRepairer = Math.round(sumTotal - salvage - excess);
-                }
-            } else {
-                // Show Insured row, Hide Repairer rows
-                document.getElementById('rowFinalToRepairer').style.display = 'none';
-                document.getElementById('rowFinalTds').style.display = 'none';
-                document.getElementById('rowFinalToInsuredTowing').style.display = 'none';
-                document.getElementById('rowFinalToInsured').style.display = 'table-row';
-                
-                document.getElementById('nsRowFinalToRepairer').style.display = 'none';
-                document.getElementById('nsRowFinalTds').style.display = 'none';
-                document.getElementById('nsRowFinalToInsuredTowing').style.display = 'none';
-                document.getElementById('nsRowFinalToInsured').style.display = 'table-row';
-                
-                stdFinalToInsured = towingPayee === 'repairer' ? Math.round(sumTotal - salvage - excess) : netAmount;
-            }
-
-            // Show towing as a separate payment only when its recipient differs
-            // from the main claim recipient; otherwise it is included in that payment.
-            const towingIsSeparatePayment = towing > 0 && mainPayee !== towingPayee;
-            document.getElementById('rowFinalToInsuredTowing').style.display = towingIsSeparatePayment ? 'table-row' : 'none';
-            document.getElementById('nsRowFinalToInsuredTowing').style.display = towingIsSeparatePayment ? 'table-row' : 'none';
-            document.querySelector('#rowFinalToInsuredTowing .summary-label').textContent =
-                'Towing - To ' + (towingPayee === 'insured' ? 'Insured' : 'Repairer');
-            document.querySelector('#nsRowFinalToInsuredTowing .summary-label').textContent =
-                'Towing - To ' + (towingPayee === 'insured' ? 'Insured' : 'Repairer');
-            stdFinalToInsuredTowing = towingIsSeparatePayment ? towing : 0;
-
-            // Populate the standard rows
-            document.getElementById('finalToRepairer').value = Math.round(stdFinalToRepairer);
-            document.getElementById('finalTds').value = Math.round(tdsAmt);
-            document.getElementById('finalToInsuredTowing').value = Math.round(stdFinalToInsuredTowing);
-            document.getElementById('finalToInsured').value = Math.round(stdFinalToInsured);
 
             // 5. Render GST Breakup
             renderGstBreakup(labTotals.breakup, partTotals.breakup);
@@ -1250,27 +1136,6 @@
                 document.getElementById('nsTdsPercent').value = nsAutoTdsPercent;
                 document.getElementById('nsTdsAmt').value = Math.round(nsTdsAmt);
                 
-                // --- FINAL NET AMOUNT TO BE PAID (NON-STANDARD CALC) ---
-                let nsFinalToInsuredTowing = (mainPayee !== towingPayee) ? Math.round(nsTowing) : 0;
-                let nsFinalToInsured = 0;
-                let nsFinalToRepairer = nsNetAmountVal;
-
-                if (mainPayee === 'repairer') {
-                    if (towingPayee === 'insured') {
-                        nsFinalToRepairer = Math.round(nsTotalAmt - salvage - excess);
-                    }
-                } else {
-                    nsFinalToInsured = towingPayee === 'repairer'
-                        ? Math.round(nsTotalAmt - salvage - excess)
-                        : nsNetAmountVal;
-                }
-
-                // Populating the Non-Std rows
-                document.getElementById('nsFinalToRepairer').value = nsFinalToRepairer; 
-                document.getElementById('nsFinalTds').value = Math.round(nsTdsAmt);
-                document.getElementById('nsFinalToInsuredTowing').value = nsFinalToInsuredTowing;
-                document.getElementById('nsFinalToInsured').value = nsFinalToInsured;
-
                 // Render Non-Standard GST Breakup
                 renderNsGstBreakup(nsLabBreakup, nsPartBreakup);
                 
