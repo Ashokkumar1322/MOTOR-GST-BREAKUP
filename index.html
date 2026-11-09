@@ -386,6 +386,85 @@
                 color: #fff !important;
             }
         }
+    
+        /* Compact only the calculation summaries for printing, leaving the
+           main claim-entry table and CLAIM PARTICULARS typography unchanged. */
+        @media print {
+            .bottom-sections {
+                gap: 3px 6px !important;
+                margin-top: 3px !important;
+            }
+
+            #summaryTable,
+            #nonStdSummaryTable {
+                font-size: 9px !important;
+                line-height: 1.05 !important;
+                margin-bottom: 0 !important;
+            }
+            #summaryTable th,
+            #nonStdSummaryTable th {
+                font-size: 9px !important;
+                line-height: 1.05 !important;
+                padding: 2px 3px !important;
+            }
+            #summaryTable td,
+            #nonStdSummaryTable td {
+                padding: 2px 3px !important;
+                font-size: 9px !important;
+                line-height: 1.05 !important;
+            }
+            #summaryTable input,
+            #summaryTable select,
+            #nonStdSummaryTable input,
+            #nonStdSummaryTable select {
+                font-size: 9px !important;
+                padding: 1px 2px !important;
+                min-height: 16px !important;
+                line-height: 1.05 !important;
+            }
+            #summaryTable .summary-label,
+            #nonStdSummaryTable .summary-label {
+                font-size: 9px !important;
+                line-height: 1.05 !important;
+            }
+
+            #gstBreakupTable,
+            #nonStdGstBreakupTable {
+                font-size: 8.5px !important;
+                line-height: 1.05 !important;
+                margin-bottom: 0 !important;
+            }
+            #gstBreakupTable th,
+            #nonStdGstBreakupTable th {
+                font-size: 9px !important;
+                line-height: 1.05 !important;
+                padding: 2px 3px !important;
+            }
+            #gstBreakupTable td,
+            #nonStdGstBreakupTable td {
+                font-size: 8.5px !important;
+                line-height: 1.05 !important;
+                padding: 1px 3px !important;
+            }
+            #gstBreakupTable td[colspan="2"],
+            #nonStdGstBreakupTable td[colspan="2"] {
+                height: 5px !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+            }
+
+            /* Reduce the deliberate blank rows inside the summary tables. */
+            #summaryTable tr td[style*="height: 20px"],
+            #nonStdSummaryTable tr td[style*="height: 15px"] {
+                height: 4px !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+            }
+            #summaryTable tr td[style*="padding: 10px"] {
+                padding: 2px !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -915,22 +994,30 @@
             }
         });
 
-        // Generate dynamic file name helper function
+        // Build the suggested PDF filename from FILE NO and VEHICLE NUMBER.
+        // Windows does not allow characters such as / \: * ? " < > | in filenames,
+        // so those characters are changed to hyphens while spaces are retained.
         function getExportFilename() {
-            let fileNo = document.getElementById('fileNoInput').value.trim();
-            let vehicleNo = document.getElementById('vehicleNoInput').value.trim();
-            
-            let parts = [];
-            if(fileNo) parts.push(fileNo);
-            if(vehicleNo) parts.push(vehicleNo);
-            
-            let filename = parts.join('_').replace(/[^a-zA-Z0-9_-]/g, '');
-            return filename ? filename : "Claim_Calculation";
+            const fileNo = document.getElementById('fileNoInput').value.trim();
+            const vehicleNo = document.getElementById('vehicleNoInput').value.trim();
+            const safePart = value => value
+                .replace(/[\\/:*?"<>|]/g, '-')
+                .replace(/\s+/g, ' ')
+                .trim();
+            const parts = [fileNo, vehicleNo].filter(Boolean).map(safePart);
+            return parts.length ? parts.join('_') : 'Claim_Calculation';
         }
 
-        // Use the browser's native print layout for reliable A4 portrait output.
-        // In the print dialog, choose "Save as PDF" to create the PDF file.
+        // Chrome uses the document title as the suggested name in Save as PDF.
+        // Restore the page title after the print dialog closes.
         function exportToPdf() {
+            const previousTitle = document.title;
+            document.title = getExportFilename();
+            const restoreTitle = () => {
+                document.title = previousTitle;
+                window.removeEventListener('afterprint', restoreTitle);
+            };
+            window.addEventListener('afterprint', restoreTitle);
             window.print();
         }
 
